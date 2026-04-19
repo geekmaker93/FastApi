@@ -1,0 +1,6 @@
+from pydantic import BaseModel
+from typing import List
+
+class FarmCreate(BaseModel):
+    name: str
+    polygon: List[List[float]]  # [[lng, lat], [lng, lat], ...]

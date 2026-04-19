@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.0",
+  "notes": "Curated fertilizer baseline for context injection. Final field decision must consider local soil tests and extension guidance.",
+  "search_aliases": [
+    "yellow leaves",
+    "pale canopy",
+    "low vigor",
+    "slow growth",
+    "poor tillering",
+    "weak stand",
+    "curling leaves"
+  ],
+  "crop_profiles": {
+    "maize": {
+      "early_vigor": {
+        "npk": "20-10-10",
+        "focus": "Nitrogen-forward starter for canopy development"
+      },
+      "mid_vigor": {
+        "npk": "15-15-15",
+        "focus": "Balanced support during active vegetative growth"
+      },
+      "high_vigor": {
+        "npk": "12-24-12",
+        "focus": "Shift toward root and grain support with moderated nitrogen"
+      }
+    },
+    "wheat": {
+      "early_vigor": {
+        "npk": "18-12-12",
+        "focus": "Early tiller growth support"
+      },
+      "mid_vigor": {
+        "npk": "16-16-16",
+        "focus": "Balanced vegetative maintenance"
+      },
+      "high_vigor": {
+        "npk": "12-24-12",
+        "focus": "Reproductive-stage phosphorus support"
+      }
+    },
+    "rice": {
+      "early_vigor": {
+        "npk": "20-10-10",
+        "focus": "Nitrogen support for tillering"
+      },
+      "mid_vigor": {
+        "npk": "14-14-14",
+        "focus": "Balanced nutrient continuity"
+      },
+      "high_vigor": {
+        "npk": "12-24-12",
+        "focus": "Panicle support and lodging risk control"
+      }
+    },
+    "generic": {
+      "early_vigor": {
+        "npk": "20-10-10",
+        "focus": "Nitrogen-biased recovery for weak canopy"
+      },
+      "mid_vigor": {
+        "npk": "15-15-15",
+        "focus": "Balanced maintenance"
+      },
+      "high_vigor": {
+        "npk": "12-24-12",
+        "focus": "Reproductive support with cautious nitrogen"
+      }
+    }
+  },
+  "soil_amendments": {
+    "acidic_soil": [
+      "Apply agricultural lime based on soil test rates.",
+      "Split nitrogen doses to improve uptake."
+    ],
+    "alkaline_soil": [
+      "Use ammonium sulfate where sulfur support is needed.",
+      "Prefer band placement of phosphorus."
+    ],
+    "low_organic_matter": [
+      "Integrate compost or well-cured manure before next cycle.",
+      "Use mulching to reduce nutrient leaching."
+    ]
+  },
+  "local_recommendations": {
+    "default": [
+      "Confirm rates with local extension standards before application.",
+      "Avoid fertilizer application immediately before heavy rain.",
+      "For hotspot sections, use split applications rather than one large dose."
+    ]
+  },
+  "stage_timing_playbook": [
+    {
+      "crop": "maize",
+      "stage": "early_vigor",
+      "goal": "rapid canopy establishment",
+      "actions": [
+        "Use starter placement close to root zone with safe seed distance.",
+        "Prefer split nitrogen if rain events are frequent.",
+        "Re-check color and growth uniformity within 7 to 10 days."
+      ]
+    },
+    {
+      "crop": "maize",
+      "stage": "mid_vigor",
+      "goal": "maintain growth without excessive vegetative risk",
+      "actions": [
+        "Keep potassium and nitrogen balanced to reduce lodging risk.",
+        "Do not over-correct with one large nitrogen dose.",
+        "Use observed canopy response to guide second split."
+      ]
+    },
+    {
+      "crop": "rice",
+      "stage": "tillering",
+      "goal": "support tiller development",
+      "actions": [
+        "Split nutrients around key tillering windows.",
+        "Avoid late excessive nitrogen when humidity is high.",
+        "Track tiller response and adjust next split."
+      ]
+    },
+    {
+      "crop": "soybean",
+      "stage": "flowering_to_pod_set",
+      "goal": "protect reproductive potential",
+      "actions": [
+        "Avoid stress-inducing operations during peak heat hours.",
+        "Use balanced nutrition and avoid over-application.",
+        "Pair nutrient decisions with moisture management."
+      ]
+    }
+  ],
+  "symptom_to_nutrient_hints": [
+    {
+      "symptom": "older leaves yellow first",
+      "possible_issue": "nitrogen deficiency",
+      "verify_with": ["soil or tissue test", "recent rainfall and leaching history"],
+      "first_step": "use staged nitrogen correction if test and field evidence align"
+    },
+    {
+      "symptom": "purpling in cool early growth",
+      "possible_issue": "phosphorus availability limitation",
+      "verify_with": ["soil temperature", "root growth", "pH range"],
+      "first_step": "support root-zone phosphorus availability and improve early root conditions"
+    },
+    {
+      "symptom": "leaf edge burn on older leaves",
+      "possible_issue": "potassium stress",
+      "verify_with": ["soil K status", "moisture stress history"],
+      "first_step": "rebalance K program and reduce moisture swings"
+    }
+  },
+  "application_safety": [
+    "Do not fertilize immediately before heavy rain events.",
+    "Avoid fertilizer on waterlogged soils.",
+    "Prefer split applications in high-leaching environments.",
+    "Validate final rates with local extension recommendations."
+  ],
+  "qa_examples": [
+    {
+      "question": "My corn leaves are yellow and growth is slow. What should I apply?",
+      "answer_pattern": "Check stage and rainfall history first, then recommend a split nitrogen correction with a follow-up observation window."
+    },
+    {
+      "question": "Should I fertilize today before rain?",
+      "answer_pattern": "If heavy rain is likely, delay application to reduce nutrient loss and runoff risk."
+    }
+  }
+}

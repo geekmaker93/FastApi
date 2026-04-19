@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        input, select, button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .status.loading {
+            background: #e7f3ff;
+            color: #004085;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .chart-container h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        canvas {
+            max-height: 300px;
+        }
+        .data-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .ai-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .ai-panel h3 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .ai-panel textarea {
+            width: 100%;
+            min-height: 90px;
+            resize: vertical;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .ai-response {
+            margin-top: 12px;
+            background: #f6f7fb;
+            border: 1px solid #e6e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            white-space: pre-wrap;
+            min-height: 64px;
+        }
+        .data-display h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .data-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        .data-card label {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .data-card .value {
+            display: block;
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 Crop Monitoring Dashboard</h1>
+            <p>Real-time farm analytics and satellite imagery</p>
+            
+            <div class="controls">
+                <input type="number" id="farmId" placeholder="Farm ID" value="1" min="1">
+                <input type="number" id="latitude" placeholder="Latitude" value="18.0180" step="0.0001">
+                <input type="number" id="longitude" placeholder="Longitude" value="-76.8099" step="0.0001">
+                <button onclick="loadDashboard()">Load Data</button>
+                <button onclick="useCurrentLocation()">Use My Location</button>
+                <button onclick="focusAiPanel()">AI Assistant</button>
+            </div>
+            
+            <div id="status"></div>
+        </div>
+        
+        <div class="charts" id="chartsContainer">
+            <div class="chart-container">
+                <h3>📊 Yield Analytics</h3>
+                <canvas id="yieldChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>🌱 NDVI Correlation</h3>
+                <canvas id="ndviChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>📈 Seasonal Trends</h3>
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>✓ Validation Accuracy</h3>
+                <canvas id="accuracyChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="data-display" id="dataDisplay">
+            <h3>📋 Farm Data</h3>
+            <div id="dataContent"></div>
+        </div>
+
+        <div class="ai-panel" id="aiPanel">
+            <h3>🤖 Cloud AI Assistant</h3>
+            <textarea id="aiPrompt" placeholder="Ask for advice using current farm dashboard data..."></textarea>
+            <div class="ai-actions">
+                <button id="aiAskButton" onclick="askCloudAI()">Ask AI</button>
+            </div>
+            <div class="ai-response" id="aiResponse">AI is ready. Load dashboard data, then ask a question.</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = (() => {
+            const origin = globalThis.location.origin;
+            if (origin && origin !== 'null' && !origin.startsWith('file:')) {
+                return origin.replace(/\/$/, '');
+            }
+            return 'http://127.0.0.1:8000';
+        })();
+        let charts = {};
+        let latestDashboardContext = null;
+        
+        function showStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        async function loadDashboard() {
+            const farmId = document.getElementById('farmId').value;
+            const lat = document.getElementById('latitude').value;
+            const lon = document.getElementById('longitude').value;
+            
+            showStatus('Loading dashboard data...');
+            
+            try {
+                // Load multiple endpoints in parallel
+                const [analyticsRes, ndviRes, validationRes] = await Promise.all([
+                    fetch(`${API_BASE}/yields/farm/${farmId}/analytics`),
+                    fetch(`${API_BASE}/yields/farm/${farmId}/ndvi-correlation`),
+                    fetch(`${API_BASE}/yields/farm/${farmId}/validation-dashboard`)
+                ]);
+                
+                if (!analyticsRes.ok || !ndviRes.ok || !validationRes.ok) {
+                    throw new Error('Failed to load one or more endpoints');
+                }
+                
+                const analyticsData = await analyticsRes.json();
+                const ndviData = await ndviRes.json();
+                const validationData = await validationRes.json();
+
+                latestDashboardContext = {
+                    farm_id: Number(farmId),
+                    latitude: Number(lat),
+                    longitude: Number(lon),
+                    analytics: analyticsData,
+                    ndvi: ndviData,
+                    validation: validationData,
+                };
+                
+                // Populate charts
+                populateYieldChart(analyticsData);
+                populateNdviChart(ndviData);
+                populateTrendChart(validationData);
+                populateAccuracyChart(validationData);
+                populateDataDisplay(analyticsData, ndviData);
+                
+                showStatus('✓ Dashboard loaded successfully', 'success');
+            } catch (error) {
+                showStatus(`✗ Error: ${error.message}`, 'error');
+                console.error('Dashboard error:', error);
+            }
+        }
+        
+        function populateYieldChart(data) {
+            const ctx = document.getElementById('yieldChart').getContext('2d');
+            
+            if (charts.yield) charts.yield.destroy();
+            
+            const seasons = data.seasons_data || [];
+            const labels = seasons.map(s => s.season || 'Unknown');
+            const values = seasons.map(s => s.yield_estimate || 0);
+            
+            charts.yield = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Estimated Yield',
+                        data: values,
+                        backgroundColor: '#667eea',
+                        borderColor: '#5568d3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+        
+        function populateNdviChart(data) {
+            const ctx = document.getElementById('ndviChart').getContext('2d');
+            
+            if (charts.ndvi) charts.ndvi.destroy();
+            
+            const analysis = data.correlation_analysis || {};
+            const correlation = analysis.correlation_coefficient || 0;
+            
+            charts.ndvi = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correlation', 'Remaining'],
+                    datasets: [{
+                        data: [Math.abs(correlation), 1 - Math.abs(correlation)],
+                        backgroundColor: [correlation > 0 ? '#28a745' : '#dc3545', '#e0e0e0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        
+        function populateTrendChart(data) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (charts.trend) charts.trend.destroy();
+            
+            const seasons = data.seasons_data || [];
+            const labels = seasons.map(s => s.season || 'Unknown');
+            const accuracy = seasons.map(s => s.accuracy || 0);
+            
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Accuracy Trend',
+                        data: accuracy,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { min: 0, max: 100 } }
+                }
+            });
+        }
+        
+        function populateAccuracyChart(data) {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            
+            if (charts.accuracy) charts.accuracy.destroy();
+            
+            const overall = data.overall_accuracy || 0;
+            
+            charts.accuracy = new Chart(ctx, {
+                type: 'gauge',
+                data: {
+                    datasets: [{
+                        data: [overall, 100 - overall],
+                        backgroundColor: [
+                            overall > 70 ? '#28a745' : overall > 50 ? '#ffc107' : '#dc3545',
+                            '#e0e0e0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y'
+                }
+            });
+            
+            // Fallback for gauge - use doughnut
+            charts.accuracy.destroy();
+            charts.accuracy = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [overall, 100 - overall],
+                        backgroundColor: [
+                            overall > 70 ? '#28a745' : overall > 50 ? '#ffc107' : '#dc3545',
+                            '#e0e0e0'
+                        ]
+                    }]
+                }
+            });
+        }
+        
+        function populateDataDisplay(analyticsData, ndviData) {
+            const html = `
+                <div class="data-grid">
+                    <div class="data-card">
+                        <label>Farm Name</label>
+                        <span class="value">${analyticsData.farm_name || 'N/A'}</span>
+                    </div>
+                    <div class="data-card">
+                        <label>Crop Type</label>
+                        <span class="value">${analyticsData.crop_type || 'N/A'}</span>
+                    </div>
+                    <div class="data-card">
+                        <label>Overall Accuracy</label>
+                        <span class="value">${(analyticsData.overall_accuracy || 0).toFixed(1)}%</span>
+                    </div>
+                    <div class="data-card">
+                        <label>NDVI Correlation</label>
+                        <span class="value">${(ndviData.correlation_analysis?.correlation_coefficient || 0).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('dataContent').innerHTML = html;
+        }
+        
+        function useCurrentLocation() {
+            if (navigator.geolocation) {
+                showStatus('Getting your location...');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('latitude').value = position.coords.latitude.toFixed(4);
+                        document.getElementById('longitude').value = position.coords.longitude.toFixed(4);
+                        showStatus('✓ Location updated, click "Load Data" to refresh', 'success');
+                    },
+                    (error) => {
+                        showStatus(`✗ Could not get location: ${error.message}`, 'error');
+                    }
+                );
+            }
+        }
+
+        function focusAiPanel() {
+            const panel = document.getElementById('aiPanel');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('aiPrompt').focus();
+        }
+
+        async function askCloudAI() {
+            const prompt = document.getElementById('aiPrompt').value.trim();
+            const farmId = Number(document.getElementById('farmId').value || 1);
+            const aiResponse = document.getElementById('aiResponse');
+            const askButton = document.getElementById('aiAskButton');
+
+            if (!prompt) {
+                aiResponse.textContent = 'Enter a question first.';
+                return;
+            }
+
+            askButton.disabled = true;
+            aiResponse.textContent = 'Thinking...';
+
+            try {
+                const response = await fetch(`${API_BASE}/ai/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: prompt,
+                        farm_id: farmId,
+                        context: latestDashboardContext || { note: 'dashboard_not_loaded_yet' }
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'AI request failed');
+                }
+                aiResponse.textContent = data.answer || 'No answer returned.';
+            } catch (error) {
+                aiResponse.textContent = `Error: ${error.message}`;
+            } finally {
+                askButton.disabled = false;
+            }
+        }
+        
+        // Load on page load
+        window.addEventListener('load', () => {
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>

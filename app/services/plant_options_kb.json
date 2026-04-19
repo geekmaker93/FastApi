@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0",
+  "search_aliases": [
+    "what should i plant",
+    "best crop for this field",
+    "what can grow here",
+    "dry spell crop",
+    "heat tolerant crop",
+    "flood tolerant crop"
+  ],
+  "crops": [
+    {
+      "name": "Maize",
+      "ndvi_min": 0.45,
+      "ndvi_max": 0.85,
+      "lai_min": 2.0,
+      "lai_max": 5.5,
+      "rainfall_min_mm": 450,
+      "rainfall_max_mm": 900,
+      "temp_min_c": 18,
+      "temp_max_c": 32,
+      "notes": "Strong option for moderate to high vigor areas with warm temperatures."
+    },
+    {
+      "name": "Soybean",
+      "ndvi_min": 0.4,
+      "ndvi_max": 0.8,
+      "lai_min": 1.8,
+      "lai_max": 5.0,
+      "rainfall_min_mm": 400,
+      "rainfall_max_mm": 850,
+      "temp_min_c": 16,
+      "temp_max_c": 30,
+      "notes": "Good rotational option where canopy vigor is moderate and drainage is acceptable."
+    },
+    {
+      "name": "Sorghum",
+      "ndvi_min": 0.3,
+      "ndvi_max": 0.75,
+      "lai_min": 1.2,
+      "lai_max": 4.2,
+      "rainfall_min_mm": 300,
+      "rainfall_max_mm": 700,
+      "temp_min_c": 20,
+      "temp_max_c": 35,
+      "notes": "Resilient under lower rainfall and variable heat profiles."
+    },
+    {
+      "name": "Cassava",
+      "ndvi_min": 0.32,
+      "ndvi_max": 0.78,
+      "lai_min": 1.4,
+      "lai_max": 4.8,
+      "rainfall_min_mm": 500,
+      "rainfall_max_mm": 1200,
+      "temp_min_c": 20,
+      "temp_max_c": 34,
+      "notes": "Suitable for warm climates with moderate soil variability."
+    },
+    {
+      "name": "Tomato",
+      "ndvi_min": 0.42,
+      "ndvi_max": 0.84,
+      "lai_min": 1.6,
+      "lai_max": 4.8,
+      "rainfall_min_mm": 350,
+      "rainfall_max_mm": 750,
+      "temp_min_c": 18,
+      "temp_max_c": 31,
+      "notes": "High-value option with strong management requirements for disease and irrigation consistency."
+    },
+    {
+      "name": "Pepper",
+      "ndvi_min": 0.4,
+      "ndvi_max": 0.82,
+      "lai_min": 1.5,
+      "lai_max": 4.5,
+      "rainfall_min_mm": 320,
+      "rainfall_max_mm": 700,
+      "temp_min_c": 19,
+      "temp_max_c": 32,
+      "notes": "Suitable for warm conditions with good drainage and close pest monitoring."
+    }
+  ],
+  "crop_selection_rules": [
+    {
+      "condition": "low_rainfall_outlook",
+      "prefer": ["Sorghum", "Cassava"],
+      "reason": "Better resilience under water-limited conditions."
+    },
+    {
+      "condition": "high_humidity_and_disease_risk",
+      "prefer": ["Maize", "Soybean"],
+      "reason": "Lower management intensity than sensitive vegetable crops under persistent humidity."
+    },
+    {
+      "condition": "good_irrigation_control_and_market_access",
+      "prefer": ["Tomato", "Pepper"],
+      "reason": "Higher margin potential with stronger management and scouting discipline."
+    }
+  ],
+  "stage_sensitive_notes": [
+    {
+      "crop": "Maize",
+      "critical_stages": ["tasseling", "grain_fill"],
+      "advice": "Avoid moisture and nutrient stress during reproductive windows."
+    },
+    {
+      "crop": "Soybean",
+      "critical_stages": ["flowering", "pod_set"],
+      "advice": "Protect moisture and monitor pod-feeding pests closely."
+    },
+    {
+      "crop": "Tomato",
+      "critical_stages": ["flowering", "fruit_set"],
+      "advice": "Maintain regular irrigation and disease scouting for blight pressure."
+    }
+  ],
+  "default_recommendation": {
+    "name": "Maize",
+    "notes": "Default recommendation when precision metrics are incomplete."
+  }
+}

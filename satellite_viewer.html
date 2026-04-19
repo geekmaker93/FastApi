@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Satellite Feed Viewer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 8px;
+            border-radius: 3px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+        .legend.active {
+            display: block;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .legend-scale {
+            height: 20px;
+            width: 200px;
+            background: linear-gradient(to right, red, yellow, green);
+            margin: 5px 0;
+        }
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="controls">
+        <h3 id="panelTitle" style="margin-top: 0;">Map Viewer</h3>
+        
+        <div class="control-group">
+            <label>Layer Type:</label>
+            <select id="layerType">
+                <option value="regular">Regular Map (OpenStreetMap)</option>
+                <option value="esri">ESRI World Imagery (Free)</option>
+                <option value="nasa">NASA MODIS Daily (Free)</option>
+                <option value="rgb">Sentinel-2 RGB (Requires Auth)</option>
+                <option value="ndvi">Sentinel-2 NDVI (Requires Auth)</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>Latitude:</label>
+            <input type="number" id="lat" value="18.0180" step="0.0001">
+        </div>
+        
+        <div class="control-group">
+            <label>Longitude:</label>
+            <input type="number" id="lon" value="-76.8099" step="0.0001">
+        </div>
+        
+        <div class="control-group" id="daysBackGroup">
+            <label>Days Back:</label>
+            <input type="number" id="daysBack" value="7" min="1" max="30">
+        </div>
+        
+        <div class="control-group" id="cloudCoverGroup">
+            <label>Cloud Cover Max (%):</label>
+            <input type="number" id="cloudCover" value="20" min="0" max="100">
+        </div>
+        
+        <button id="loadBtn" onclick="loadSatelliteFeed()">Apply View</button>
+        <button onclick="useCurrentLocation()">Use My Location</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <div class="legend" id="legend">
+        <div class="legend-title">NDVI Scale</div>
+        <div class="legend-scale"></div>
+        <div class="legend-labels">
+            <span>Low (-1)</span>
+            <span>Medium (0)</span>
+            <span>High (1)</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 11px;">
+            Green = Healthy vegetation<br>
+            Yellow = Moderate vegetation<br>
+            Red = Poor/No vegetation
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // API Configuration
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        // Initialize map
+        const map = L.map('map').setView([18.0180, -76.8099], 13);
+        
+        // Base layer (Esri World Topo Map - clean terrain view, no street clutter)
+        const baseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+            maxZoom: 19
+        }).addTo(map);
+        
+        let satelliteLayer = null;
+        let currentMarker = null;
+
+        function updateLayerControls() {
+            const layerType = document.getElementById('layerType').value;
+            const daysBackGroup = document.getElementById('daysBackGroup');
+            const cloudCoverGroup = document.getElementById('cloudCoverGroup');
+            const panelTitle = document.getElementById('panelTitle');
+
+            const requiresSentinelControls = layerType === 'rgb' || layerType === 'ndvi';
+            daysBackGroup.style.display = requiresSentinelControls ? 'block' : 'none';
+            cloudCoverGroup.style.display = layerType === 'rgb' ? 'block' : 'none';
+
+            if (layerType === 'regular') {
+                panelTitle.textContent = 'Map Viewer';
+            } else {
+                panelTitle.textContent = 'Live Satellite Feed';
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        async function loadSatelliteFeed() {
+            const lat = Number.parseFloat(document.getElementById('lat').value);
+            const lon = Number.parseFloat(document.getElementById('lon').value);
+            const daysBack = Number.parseInt(document.getElementById('daysBack').value, 10);
+            const cloudCover = Number.parseInt(document.getElementById('cloudCover').value, 10);
+            const layerType = document.getElementById('layerType').value;
+            
+            const loadBtn = document.getElementById('loadBtn');
+            loadBtn.disabled = true;
+            showStatus('Applying map layer...', 'loading');
+            
+            // Remove existing satellite layer
+            if (satelliteLayer) {
+                map.removeLayer(satelliteLayer);
+                satelliteLayer = null;
+            }
+
+            if (layerType === 'regular') {
+                document.getElementById('legend').classList.remove('active');
+                showStatus('✓ Loaded Regular Map view', 'success');
+                loadBtn.disabled = false;
+                return;
+            }
+            
+            // Add/update marker
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            currentMarker = L.marker([lat, lon]).addTo(map);
+            map.setView([lat, lon], 13);
+            
+            try {
+                let endpoint, data;
+                
+                // Handle free external tile sources
+                if (layerType === 'esri') {
+                    const response = await fetch(`${API_BASE}/sentinel/external/esri-world`);
+                    data = await response.json();
+                    
+                    satelliteLayer = L.tileLayer(data.tile_url, {
+                        attribution: data.attribution,
+                        maxZoom: data.maxzoom,
+                        opacity: 0.8
+                    }).addTo(map);
+                    
+                    showStatus(`✓ Loaded ${data.provider} (Free)`, 'success');
+                    document.getElementById('legend').classList.remove('active');
+                    loadBtn.disabled = false;
+                    return;
+                }
+                
+                if (layerType === 'nasa') {
+                    const response = await fetch(`${API_BASE}/sentinel/external/nasa-gibs`);
+                    data = await response.json();
+                    
+                    satelliteLayer = L.tileLayer(data.tile_url, {
+                        attribution: data.attribution,
+                        maxZoom: data.maxzoom,
+                        opacity: 0.8
+                    }).addTo(map);
+                    
+                    showStatus(`✓ Loaded ${data.provider} - ${data.date} (Free, Daily)`, 'success');
+                    document.getElementById('legend').classList.remove('active');
+                    loadBtn.disabled = false;
+                    return;
+                }
+                
+                // Handle Sentinel-2 via Earth Engine (requires auth)
+                if (layerType === 'ndvi') {
+                    endpoint = `/sentinel/live/ndvi-tiles?lat=${lat}&lon=${lon}&buffer_km=10&days_back=${daysBack}`;
+                    document.getElementById('legend').classList.add('active');
+                } else {
+                    endpoint = `/sentinel/live/tiles?lat=${lat}&lon=${lon}&buffer_km=10&days_back=${daysBack}&cloud_cover_max=${cloudCover}`;
+                    document.getElementById('legend').classList.remove('active');
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                data = await response.json();
+                
+                if (data.error) {
+                    showStatus(`Error: ${data.error}`, 'error');
+                    loadBtn.disabled = false;
+                    return;
+                }
+                
+                // Add satellite tile layer
+                satelliteLayer = L.tileLayer(data.tile_url, {
+                    attribution: `© ${data.provider}`,
+                    maxZoom: 18,
+                    opacity: 0.8
+                }).addTo(map);
+                
+                showStatus(`✓ Loaded ${data.provider} imagery from ${data.date}`, 'success');
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                loadBtn.disabled = false;
+            }
+        }
+        
+        function useCurrentLocation() {
+            if (navigator.geolocation) {
+                showStatus('Getting your location...', 'loading');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('lat').value = position.coords.latitude.toFixed(4);
+                        document.getElementById('lon').value = position.coords.longitude.toFixed(4);
+                        showStatus('✓ Location updated', 'success');
+                    },
+                    (error) => {
+                        showStatus('Could not get location', 'error');
+                    }
+                );
+            } else {
+                showStatus('Geolocation not supported', 'error');
+            }
+        }
+        
+        // Load external tile sources on page load
+        async function loadTileSources() {
+            try {
+                const response = await fetch(`${API_BASE}/sentinel/tile-sources`);
+                const sources = await response.json();
+                console.log('Available tile sources:', sources);
+            } catch (error) {
+                console.error('Failed to load tile sources:', error);
+            }
+        }
+
+        document.getElementById('layerType').addEventListener('change', updateLayerControls);
+        updateLayerControls();
+
+        loadTileSources();
+    </script>
+</body>
+</html>

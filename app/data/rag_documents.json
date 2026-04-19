@@ -1,0 +1,1345 @@
+{
+  "updated_at": "2026-03-21T17:36:08.462651+00:00",
+  "documents": [
+    {
+      "id": "9705da09-3dcd-4236-8cef-4ed24577e88f",
+      "text": "Topic: categories. Content: {\"fertilizer\": {\"products\": [{\"name\": \"Balanced NPK Blend\", \"example_npk\": \"15-15-15\", \"use_for\": [\"mid_vigor\"]}, {\"name\": \"Nitrogen-Forward NPK\", \"example_npk\": \"20-10-10\", \"use_for\": [\"early_vigor\"]}, {\"name\": \"Phosphorus-Forward NPK\", \"example_npk\": \"12-24-12\", \"use_for\": [\"high_vigor\"]}]}, \"soil_amendment\": {\"products\": [{\"name\": \"Agricultural Lime\", \"use_for\": [\"acidic_soil\"]}, {\"name\": \"Gypsum\", \"use_for\": [\"calcium_support\"]}, {\"name\": \"Compost\", \"use_for\": [\"low_organic_matter\"]}]}, \"pesticide\": {\"products\": [{\"name\": \"Targeted Fungicide\", \"use_for\": [\"fungal_pressure\"]}, {\"name\": \"Targeted Insecticide\", \"use_for\": [\"pest_pressure\"]}]}}",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-0",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "28a1d313-909b-43ae-af58-e8e9488c3bfa",
+      "text": "Topic: sourcing. Content: {\"national_retailers\": [{\"name\": \"Lowe's\", \"type\": \"retailer\", \"notes\": \"Garden/farm supplies vary by region\"}, {\"name\": \"Home Depot\", \"type\": \"retailer\", \"notes\": \"Stock varies by store\"}, {\"name\": \"Tractor Supply\", \"type\": \"farm_store\", \"notes\": \"Farm-focused product range\"}], \"local_channels\": [{\"name\": \"Local agricultural co-op\", \"type\": \"co-op\", \"notes\": \"Often best for crop-specific recommendations\"}, {\"name\": \"Certified agro-dealer\", \"type\": \"dealer\", \"notes\": \"Verify product registration and label\"}], \"store_locations\": [{\"name\": \"Lowe's Mooresville\", \"type\": \"retailer\", \"latitude\": 35.5849, \"longitude\": -80.8107, \"address\": \"1000 Lowes Blvd, Mooresville, NC",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-1",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a56e6c31-0e38-42cf-9a5d-64580c1a4223",
+      "text": "oresville\", \"type\": \"retailer\", \"latitude\": 35.5849, \"longitude\": -80.8107, \"address\": \"1000 Lowes Blvd, Mooresville, NC 28117, USA\", \"phone\": \"+1-800-445-6937\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"]}, {\"name\": \"Home Depot Atlanta Support\", \"type\": \"retailer\", \"latitude\": 33.8474, \"longitude\": -84.426, \"address\": \"2455 Paces Ferry Rd SE, Atlanta, GA 30339, USA\", \"phone\": \"+1-800-466-3337\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"]}, {\"name\": \"Tractor Supply Brentwood\", \"type\": \"farm_store\", \"latitude\": 36.0331, \"longitude\": -86.8047, \"address\": \"5401 Virginia Way, Brentwood, TN 37027, USA\", \"phone\": \"+1-877-718-6750\", \"item_types\": [\"fertilizer\", \"soil",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-1",
+        "farm_id": null,
+        "chunk": 1
+      }
+    },
+    {
+      "id": "9aa21cec-b479-4548-968b-7b34c3d94901",
+      "text": "\"address\": \"5401 Virginia Way, Brentwood, TN 37027, USA\", \"phone\": \"+1-877-718-6750\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"]}, {\"name\": \"JCSD Kingston Cooperative\", \"type\": \"co-op\", \"latitude\": 18.0179, \"longitude\": -76.8099, \"address\": \"85 King Street, Kingston, Jamaica\", \"phone\": \"+1-876-922-1450\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"], \"country\": \"Jamaica\", \"notes\": \"Jamaica Co-operative Societies Development - main hub\"}, {\"name\": \"Nurserymen's Association - Kingston\", \"type\": \"association\", \"latitude\": 18.025, \"longitude\": -76.805, \"address\": \"Hope Gardens, Kingston 6, Jamaica\", \"phone\": \"+1-876-927-1257\", \"item_types\": [\"fertilizer\", \"soil_ame",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-1",
+        "farm_id": null,
+        "chunk": 2
+      }
+    },
+    {
+      "id": "3e159bf7-0792-49d5-9669-f96583613e70",
+      "text": ".805, \"address\": \"Hope Gardens, Kingston 6, Jamaica\", \"phone\": \"+1-876-927-1257\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"], \"country\": \"Jamaica\", \"notes\": \"Local nursery association with agricultural supplier contacts\"}, {\"name\": \"Agro-Plus Distributor - Spanish Town\", \"type\": \"dealer\", \"latitude\": 18.0063, \"longitude\": -76.7597, \"address\": \"2 Saunders Street, Spanish Town, St. Catherine, Jamaica\", \"phone\": \"+1-876-984-2109\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"], \"country\": \"Jamaica\", \"notes\": \"Agricultural inputs distributor for central Jamaica\"}, {\"name\": \"Green Valley Agro-Dealer - May Pen\", \"type\": \"dealer\", \"latitude\": 18.2484, \"longitude\": -77.",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-1",
+        "farm_id": null,
+        "chunk": 3
+      }
+    },
+    {
+      "id": "96913c8a-93aa-4eeb-abe2-7d4a941bfe38",
+      "text": "ntral Jamaica\"}, {\"name\": \"Green Valley Agro-Dealer - May Pen\", \"type\": \"dealer\", \"latitude\": 18.2484, \"longitude\": -77.2386, \"address\": \"Main Street, May Pen, Clarendon, Jamaica\", \"phone\": \"+1-876-986-0275\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"], \"country\": \"Jamaica\", \"notes\": \"Clarendon agricultural supplies - central Jamaica location\"}, {\"name\": \"Island Agri-Supplies - Montego Bay\", \"type\": \"retailer\", \"latitude\": 18.4716, \"longitude\": -77.2868, \"address\": \"Sam Sharpe Square, Montego Bay, Jamaica\", \"phone\": \"+1-876-952-0900\", \"item_types\": [\"fertilizer\", \"soil_amendment\", \"pesticide\"], \"country\": \"Jamaica\", \"notes\": \"Western Jamaica agricultural supplier\"}]}",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-1",
+        "farm_id": null,
+        "chunk": 4
+      }
+    },
+    {
+      "id": "43bb346e-822b-4dcf-8005-28d27d1d17a9",
+      "text": "Topic: procurement_guidelines. Content: [\"Match product label to crop type and growth stage before purchase.\", \"Confirm active ingredient and registration status in your jurisdiction.\", \"Buy only quantities that can be applied within recommended windows.\"]",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-2",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "2aebc8a7-0e5c-468f-8c18-b03399952c40",
+      "text": "Topic: issue_to_product_type. Content: [{\"issue\": \"fungal_pressure\", \"recommended_types\": [\"Targeted Fungicide\", \"Compost\"], \"why\": \"Manage active disease pressure and improve canopy-zone resilience over time.\"}, {\"issue\": \"pest_pressure\", \"recommended_types\": [\"Targeted Insecticide\"], \"why\": \"Use threshold-based targeted control rather than broad calendar spraying.\"}, {\"issue\": \"acidic_soil\", \"recommended_types\": [\"Agricultural Lime\"], \"why\": \"Supports pH correction and nutrient availability when soil tests confirm need.\"}, {\"issue\": \"low_organic_matter\", \"recommended_types\": [\"Compost\", \"Gypsum\"], \"why\": \"Improves soil structure and long-term nutrient cycling.\"}]",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-3",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "087cb9de-4b50-4c09-bf69-680216013c89",
+      "text": "Topic: recommendation_examples. Content: [{\"user_question\": \"Leaves have spots after humid weather. What should I get?\", \"recommended_flow\": [\"Confirm symptom pattern and disease risk conditions first.\", \"Recommend targeted fungicide options available in nearby stores.\", \"Add one preventive cultural step: airflow, sanitation, irrigation timing.\"]}, {\"user_question\": \"Field is weak and yellow. Which product helps?\", \"recommended_flow\": [\"Check likely nutrient stress and soil moisture context.\", \"Suggest staged nutrient correction product class, not single guaranteed cure.\", \"Advise follow-up observation window and local agronomist verification.\"]}]",
+      "metadata": {
+        "source_type": "agri_products",
+        "title": "agri_products-kb-4",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "625833b4-f1d1-4621-8efe-a50288a03474",
+      "text": "Topic: crops. Content: [{\"name\": \"Maize\", \"ndvi_min\": 0.45, \"ndvi_max\": 0.85, \"lai_min\": 2.0, \"lai_max\": 5.5, \"rainfall_min_mm\": 450, \"rainfall_max_mm\": 900, \"temp_min_c\": 18, \"temp_max_c\": 32, \"notes\": \"Strong option for moderate to high vigor areas with warm temperatures.\"}, {\"name\": \"Soybean\", \"ndvi_min\": 0.4, \"ndvi_max\": 0.8, \"lai_min\": 1.8, \"lai_max\": 5.0, \"rainfall_min_mm\": 400, \"rainfall_max_mm\": 850, \"temp_min_c\": 16, \"temp_max_c\": 30, \"notes\": \"Good rotational option where canopy vigor is moderate and drainage is acceptable.\"}, {\"name\": \"Sorghum\", \"ndvi_min\": 0.3, \"ndvi_max\": 0.75, \"lai_min\": 1.2, \"lai_max\": 4.2, \"rainfall_min_mm\": 300, \"rainfall_max_mm\": 700, \"temp_min_c\": 20, \"tem",
+      "metadata": {
+        "source_type": "plant_options",
+        "title": "plant_options-kb-0",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "8a14effb-804a-4a4e-92fd-9be5353f0766",
+      "text": "\"ndvi_max\": 0.75, \"lai_min\": 1.2, \"lai_max\": 4.2, \"rainfall_min_mm\": 300, \"rainfall_max_mm\": 700, \"temp_min_c\": 20, \"temp_max_c\": 35, \"notes\": \"Resilient under lower rainfall and variable heat profiles.\"}, {\"name\": \"Cassava\", \"ndvi_min\": 0.32, \"ndvi_max\": 0.78, \"lai_min\": 1.4, \"lai_max\": 4.8, \"rainfall_min_mm\": 500, \"rainfall_max_mm\": 1200, \"temp_min_c\": 20, \"temp_max_c\": 34, \"notes\": \"Suitable for warm climates with moderate soil variability.\"}, {\"name\": \"Tomato\", \"ndvi_min\": 0.42, \"ndvi_max\": 0.84, \"lai_min\": 1.6, \"lai_max\": 4.8, \"rainfall_min_mm\": 350, \"rainfall_max_mm\": 750, \"temp_min_c\": 18, \"temp_max_c\": 31, \"notes\": \"High-value option with strong management requirements for disease an",
+      "metadata": {
+        "source_type": "plant_options",
+        "title": "plant_options-kb-0",
+        "farm_id": null,
+        "chunk": 1
+      }
+    },
+    {
+      "id": "85a6bb14-fe1f-488b-b848-88d9145d7292",
+      "text": "750, \"temp_min_c\": 18, \"temp_max_c\": 31, \"notes\": \"High-value option with strong management requirements for disease and irrigation consistency.\"}, {\"name\": \"Pepper\", \"ndvi_min\": 0.4, \"ndvi_max\": 0.82, \"lai_min\": 1.5, \"lai_max\": 4.5, \"rainfall_min_mm\": 320, \"rainfall_max_mm\": 700, \"temp_min_c\": 19, \"temp_max_c\": 32, \"notes\": \"Suitable for warm conditions with good drainage and close pest monitoring.\"}]",
+      "metadata": {
+        "source_type": "plant_options",
+        "title": "plant_options-kb-0",
+        "farm_id": null,
+        "chunk": 2
+      }
+    },
+    {
+      "id": "dcc996d0-982c-4abe-bff2-dcb1b941838b",
+      "text": "Topic: crop_selection_rules. Content: [{\"condition\": \"low_rainfall_outlook\", \"prefer\": [\"Sorghum\", \"Cassava\"], \"reason\": \"Better resilience under water-limited conditions.\"}, {\"condition\": \"high_humidity_and_disease_risk\", \"prefer\": [\"Maize\", \"Soybean\"], \"reason\": \"Lower management intensity than sensitive vegetable crops under persistent humidity.\"}, {\"condition\": \"good_irrigation_control_and_market_access\", \"prefer\": [\"Tomato\", \"Pepper\"], \"reason\": \"Higher margin potential with stronger management and scouting discipline.\"}]",
+      "metadata": {
+        "source_type": "plant_options",
+        "title": "plant_options-kb-1",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "39cd69d5-0178-49fa-a64f-421d93ab51e5",
+      "text": "Topic: stage_sensitive_notes. Content: [{\"crop\": \"Maize\", \"critical_stages\": [\"tasseling\", \"grain_fill\"], \"advice\": \"Avoid moisture and nutrient stress during reproductive windows.\"}, {\"crop\": \"Soybean\", \"critical_stages\": [\"flowering\", \"pod_set\"], \"advice\": \"Protect moisture and monitor pod-feeding pests closely.\"}, {\"crop\": \"Tomato\", \"critical_stages\": [\"flowering\", \"fruit_set\"], \"advice\": \"Maintain regular irrigation and disease scouting for blight pressure.\"}]",
+      "metadata": {
+        "source_type": "plant_options",
+        "title": "plant_options-kb-2",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "f4b57518-a04f-4d41-b02f-68fb592065e5",
+      "text": "Topic: default_recommendation. Content: {\"name\": \"Maize\", \"notes\": \"Default recommendation when precision metrics are incomplete.\"}",
+      "metadata": {
+        "source_type": "plant_options",
+        "title": "plant_options-kb-3",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "eada725c-6625-48c2-9b01-e41d64b7e6d6",
+      "text": "Topic: notes. Content: \"Agronomy playbook for practical, field-level decision support. Use with local labels and extension guidance.\"",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-0",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "188e5fc3-03e3-45ee-a0e1-d3ca61f9dda0",
+      "text": "Topic: synonyms. Content: {\"nitrogen_deficiency\": [\"yellow leaves\", \"pale leaves\", \"slow growth\", \"weak canopy\"], \"water_stress\": [\"wilting\", \"rolled leaves\", \"leaf curl\", \"dry topsoil\"], \"fungal_pressure\": [\"leaf spots\", \"blight\", \"mildew\", \"mold\"], \"pest_pressure\": [\"holes in leaves\", \"chewed leaves\", \"insect damage\", \"aphids\", \"armyworm\"]}",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-1",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e8fa1396-ae39-4118-a2cd-597fd60a59f7",
+      "text": "Topic: crop_stage_guidance. Content: [{\"crop\": \"maize\", \"stage\": \"emergence_to_v3\", \"signals\": [\"stand establishment\", \"even emergence\", \"starter vigor\"], \"actions\": [\"Maintain weed-free rows during first 3 to 4 weeks.\", \"Avoid waterlogging in seedling stage; improve drainage if needed.\", \"If chlorosis appears early, confirm nitrogen and sulfur availability with a quick soil check.\"], \"cautions\": [\"Do not over-apply nitrogen in one shot on sandy soils.\", \"Avoid herbicide stress under heat and moisture deficit.\"]}, {\"crop\": \"maize\", \"stage\": \"v6_to_tasseling\", \"signals\": [\"rapid canopy growth\", \"high nitrogen demand\", \"water sensitivity\"], \"actions\": [\"Split nitrogen application across growth",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-2",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "b5ad41e0-2820-4353-88dc-2e726c266edb",
+      "text": "apid canopy growth\", \"high nitrogen demand\", \"water sensitivity\"], \"actions\": [\"Split nitrogen application across growth windows where rainfall risk is high.\", \"Prioritize irrigation consistency to reduce stress before tasseling.\", \"Scout for foliar disease weekly in humid conditions.\"], \"cautions\": [\"Water stress near tasseling can cause major yield loss.\", \"Unbalanced nitrogen and potassium can increase lodging risk.\"]}, {\"crop\": \"rice\", \"stage\": \"tillering_to_panicle\", \"signals\": [\"tiller count\", \"uniform stand\", \"leaf color\"], \"actions\": [\"Keep water depth stable based on local rice management practice.\", \"Use split nutrient timing to match tillering and panicle initiation.\", \"Monitor fo",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-2",
+        "farm_id": null,
+        "chunk": 1
+      }
+    },
+    {
+      "id": "2c52cc01-ac8b-457b-8f9a-4b490fce6460",
+      "text": "on local rice management practice.\", \"Use split nutrient timing to match tillering and panicle initiation.\", \"Monitor for blast risk when humidity is persistently high.\"], \"cautions\": [\"Excess nitrogen late can increase disease pressure and lodging.\", \"Poor drainage around field edges can drive patchy stress.\"]}, {\"crop\": \"soybean\", \"stage\": \"flowering_to_pod_fill\", \"signals\": [\"flower retention\", \"pod set\", \"canopy temperature\"], \"actions\": [\"Protect moisture during flowering and pod set windows.\", \"Prioritize pest scouting for pod feeders and defoliators.\", \"Keep field records of stress windows for next-season adjustments.\"], \"cautions\": [\"Short drought during pod set can reduce final yiel",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-2",
+        "farm_id": null,
+        "chunk": 2
+      }
+    },
+    {
+      "id": "50080e51-703c-4304-b44c-571e1c86a97a",
+      "text": "cords of stress windows for next-season adjustments.\"], \"cautions\": [\"Short drought during pod set can reduce final yield strongly.\", \"Avoid unnecessary sprays without threshold-based scouting.\"]}]",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-2",
+        "farm_id": null,
+        "chunk": 3
+      }
+    },
+    {
+      "id": "7f525bce-c376-4056-a179-b1c242a6b648",
+      "text": "Topic: symptom_to_likely_causes. Content: [{\"symptom\": \"older leaves turning yellow first\", \"likely_causes\": [\"nitrogen deficiency\", \"root restriction\", \"waterlogging history\"], \"checks\": [\"review recent rainfall\", \"inspect root health\", \"confirm soil nitrogen status\"], \"first_actions\": [\"apply staged nitrogen where appropriate\", \"improve drainage\", \"reassess in 5 to 7 days\"]}, {\"symptom\": \"leaf spots expanding during humid weather\", \"likely_causes\": [\"fungal disease pressure\"], \"checks\": [\"check lower canopy first\", \"inspect lesion pattern\", \"review humidity and wet-leaf duration\"], \"first_actions\": [\"remove heavily infected debris where practical\", \"improve airflow\", \"consider registered f",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-3",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "62a261f5-5a65-48fa-8de5-85a274211ca3",
+      "text": "uration\"], \"first_actions\": [\"remove heavily infected debris where practical\", \"improve airflow\", \"consider registered fungicide per label and threshold\"]}, {\"symptom\": \"wilting at midday with recovery at evening\", \"likely_causes\": [\"early water stress\", \"shallow roots\", \"compacted top layer\"], \"checks\": [\"soil moisture at 10 to 20 cm\", \"root depth\", \"compaction signs\"], \"first_actions\": [\"adjust irrigation timing\", \"reduce surface evaporation with residue or mulch\", \"break compaction in next prep cycle\"]}, {\"symptom\": \"irregular patches of poor growth\", \"likely_causes\": [\"drainage variability\", \"soil pH variability\", \"localized pest pressure\"], \"checks\": [\"map low spots\", \"run targeted pH c",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-3",
+        "farm_id": null,
+        "chunk": 1
+      }
+    },
+    {
+      "id": "fba42298-5d14-4e9b-b97f-a1c46cf1a337",
+      "text": "drainage variability\", \"soil pH variability\", \"localized pest pressure\"], \"checks\": [\"map low spots\", \"run targeted pH checks\", \"inspect roots and stems in affected zones\"], \"first_actions\": [\"zone-based correction instead of whole-field uniform treatment\", \"track affected coordinates\"]}]",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-3",
+        "farm_id": null,
+        "chunk": 2
+      }
+    },
+    {
+      "id": "84f4e8f3-afd3-4d5c-bae7-1b6948a8524b",
+      "text": "Topic: irrigation_rules_of_thumb. Content: [{\"condition\": \"hot_and_windy\", \"signals\": [\"temperature above 32C\", \"high evapotranspiration\", \"leaf rolling\"], \"guidance\": \"Use shorter, more frequent irrigation cycles to reduce stress spikes.\"}, {\"condition\": \"recent_heavy_rain\", \"signals\": [\"field saturation\", \"standing water\", \"low oxygen risk\"], \"guidance\": \"Delay additional irrigation and prioritize drainage checks before the next watering decision.\"}, {\"condition\": \"flowering_or_reproductive_stage\", \"signals\": [\"flowering\", \"pod set\", \"tasseling\", \"grain fill\"], \"guidance\": \"Avoid moisture gaps in reproductive windows; these stages are highly yield-sensitive.\"}]",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-4",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "bcb8f6a2-dfe4-4a0e-b745-f4a02d7db2b6",
+      "text": "Topic: question_patterns. Content: [{\"user_phrases\": [\"what should i do today\", \"my crop is yellowing\", \"why are leaves curling\", \"is this blight\"], \"recommendation_style\": \"Start with a decision, state evidence, then provide a 3-step action plan and one safety caution.\"}]",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-5",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "2ac8ec45-7063-49ea-9674-2617782dd342",
+      "text": "Topic: safety_and_compliance. Content: [\"Always follow product labels and local registration rules.\", \"Use threshold-based pest and disease decisions where possible.\", \"Do not mix products unless label compatibility is confirmed.\", \"Escalate to local agronomist or extension service for severe or fast-spreading symptoms.\"]",
+      "metadata": {
+        "source_type": "agronomy_playbook",
+        "title": "agronomy_playbook-kb-6",
+        "farm_id": null,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c56cd2d6-79de-46de-9fa3-7f8a2c54ee6d",
+      "text": "Farm profile: id=1, name=Green Valley Farm, crop_type=Corn. Boundary polygon=[[18.0179, -76.8099], [18.018, -76.8099]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-1-profile",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "d040317b-4fbb-45d9-8192-816b484b978c",
+      "text": "Farm profile: id=2, name=jhon, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-2-profile",
+        "farm_id": 2,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "47551485-3e8d-49d4-a080-29da184add36",
+      "text": "Farm profile: id=3, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-3-profile",
+        "farm_id": 3,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "ad1d6358-6a1a-4cb9-b193-3e7af7ca61b1",
+      "text": "Farm profile: id=4, name=jhon, crop_type=Not specified. Boundary polygon=[[-122.43283325642348, 37.76205018796603], [-122.41283325642347, 37.76205018796603], [-122.41283325642347, 37.78205018796603], [-122.43283325642348, 37.78205018796603], [-122.43283325642348, 37.76205018796603]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-4-profile",
+        "farm_id": 4,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "21c11382-2d3b-476e-bb17-c6a19d0270a9",
+      "text": "Farm profile: id=5, name=mike, crop_type=Not specified. Boundary polygon=[[-122.42957169026137, 37.76110034902577], [-122.40957169026136, 37.76110034902577], [-122.40957169026136, 37.78110034902576], [-122.42957169026137, 37.78110034902576], [-122.42957169026137, 37.76110034902577]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-5-profile",
+        "farm_id": 5,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a67b1e77-ba69-44fb-b892-8e468551379d",
+      "text": "Farm profile: id=6, name=debug-farm, crop_type=Not specified. Boundary polygon=[[-76.81, 18.01], [-76.8, 18.01], [-76.8, 18.02], [-76.81, 18.02], [-76.81, 18.01]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-6-profile",
+        "farm_id": 6,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "d4355384-092a-4d5a-860b-d39a801ae186",
+      "text": "Farm profile: id=7, name=debug-badpoly, crop_type=Not specified. Boundary polygon=[[-76.81, 18.01], [-76.8, 18.01]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-7-profile",
+        "farm_id": 7,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a8be9437-c28e-4f47-9652-0c1cb190e6f2",
+      "text": "Farm profile: id=8, name=king, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-8-profile",
+        "farm_id": 8,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "bccec307-de31-4846-918b-91b5221f0542",
+      "text": "Farm profile: id=9, name=king, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-9-profile",
+        "farm_id": 9,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "2e817517-44b4-43dd-bfd8-b3c9a2a9626a",
+      "text": "Farm profile: id=10, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-10-profile",
+        "farm_id": 10,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "ee8d48eb-e82b-4c5d-a260-8b5f861214aa",
+      "text": "Farm profile: id=11, name=king, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-11-profile",
+        "farm_id": 11,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e285afac-6389-40c8-a9c6-27615df0c578",
+      "text": "Farm profile: id=12, name=jhon, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-12-profile",
+        "farm_id": 12,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "9ee0b25b-f439-4d6a-93a3-d5920c05adf4",
+      "text": "Farm profile: id=13, name=king, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-13-profile",
+        "farm_id": 13,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c9feac3e-8b89-425b-9b18-44e1b4fbc8a0",
+      "text": "Farm profile: id=14, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-14-profile",
+        "farm_id": 14,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "47f09069-506b-473d-834d-b9b28b2baed4",
+      "text": "Farm profile: id=15, name=james, crop_type=Not specified. Boundary polygon=[[18.633501, 60.11816100000001], [18.653501000000002, 60.11816100000001], [18.653501000000002, 60.138161000000004], [18.633501, 60.138161000000004], [18.633501, 60.11816100000001]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-15-profile",
+        "farm_id": 15,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e85ecc67-eb03-4d85-b3e8-6e5f3b41395c",
+      "text": "Farm profile: id=16, name=ja, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-16-profile",
+        "farm_id": 16,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c948c40b-5ca5-4336-abe4-9d25fbdb350e",
+      "text": "Farm profile: id=17, name=man, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-17-profile",
+        "farm_id": 17,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c6e9c089-c815-4151-9a43-375e6c9dfe57",
+      "text": "Farm profile: id=18, name=man, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-18-profile",
+        "farm_id": 18,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "d0d2c84b-5f98-4a91-99bc-a414df793c45",
+      "text": "Farm profile: id=19, name=man, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-19-profile",
+        "farm_id": 19,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "f7007f85-5f14-4908-97f9-8b683a10973a",
+      "text": "Farm profile: id=20, name=man, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-20-profile",
+        "farm_id": 20,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "ed2ca8d6-18d7-4e78-9570-d8150451cce5",
+      "text": "Farm profile: id=21, name=man, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-21-profile",
+        "farm_id": 21,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "09ef0a39-ac16-4d4e-8834-b1fe1bba06a2",
+      "text": "Farm profile: id=22, name=man, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-22-profile",
+        "farm_id": 22,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "05f06f94-9105-43e4-b20a-28c236d11112",
+      "text": "Farm profile: id=23, name=j, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-23-profile",
+        "farm_id": 23,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a098e2a7-21a2-42d1-a19c-38ce51ad85e7",
+      "text": "Farm profile: id=24, name=j, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-24-profile",
+        "farm_id": 24,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "8720aa36-63ff-47f5-8487-619f0963d13e",
+      "text": "Farm profile: id=25, name=jhon, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-25-profile",
+        "farm_id": 25,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "1f459d23-4db2-47ce-a38a-0c5d53a1f2f9",
+      "text": "Farm profile: id=26, name=diag-farm, crop_type=Not specified. Boundary polygon=[[-76.81, 18.01], [-76.8, 18.01], [-76.8, 18.02], [-76.81, 18.02], [-76.81, 18.01]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-26-profile",
+        "farm_id": 26,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "da3307a3-f310-4b8a-af55-c449092239a6",
+      "text": "Farm profile: id=27, name=diag-farm-8001, crop_type=Not specified. Boundary polygon=[[-76.81, 18.01], [-76.8, 18.01], [-76.8, 18.02], [-76.81, 18.02], [-76.81, 18.01]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-27-profile",
+        "farm_id": 27,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "0152a4f3-1dc9-40df-aec2-d30cdd81fc9d",
+      "text": "Farm profile: id=28, name=jhon, crop_type=Not specified. Boundary polygon=[[-74.0159728, 40.7027753], [-73.99597279999999, 40.7027753], [-73.99597279999999, 40.722775299999995], [-74.0159728, 40.722775299999995], [-74.0159728, 40.7027753]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-28-profile",
+        "farm_id": 28,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "0dfebb5a-576a-4151-aa3b-22d529096043",
+      "text": "Farm profile: id=29, name=AI Farm 202603051848, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-29-profile",
+        "farm_id": 29,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c9f6570a-ac07-49e2-8ae2-12e3e18ca4f5",
+      "text": "Farm profile: id=30, name=name jhon, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-30-profile",
+        "farm_id": 30,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "fda7aad6-cf7e-4431-8b82-7076c1db4acc",
+      "text": "Farm profile: id=31, name=AI Farm 202603051857, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-31-profile",
+        "farm_id": 31,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "b010de3b-b1be-47a7-99c6-d51f2a5ce0e2",
+      "text": "Farm profile: id=32, name=name jhon in jamaica, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-32-profile",
+        "farm_id": 32,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "38fb8b91-8758-4163-b1c0-1f51dc78a242",
+      "text": "Farm profile: id=33, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-33-profile",
+        "farm_id": 33,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "fe62ea22-2b44-4852-b0a8-b9cd57a88482",
+      "text": "Farm profile: id=34, name=AI Farm 202603052211, crop_type=Not specified. Boundary polygon=[[-80.8207, 35.5749], [-80.80069999999999, 35.5749], [-80.80069999999999, 35.594899999999996], [-80.8207, 35.594899999999996], [-80.8207, 35.5749]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-34-profile",
+        "farm_id": 34,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "6aa5246d-c8c0-42fd-a720-a73a04fd4d8f",
+      "text": "Farm profile: id=35, name=AI Farm 202603052214, crop_type=Not specified. Boundary polygon=[[-80.8207, 35.5749], [-80.80069999999999, 35.5749], [-80.80069999999999, 35.594899999999996], [-80.8207, 35.594899999999996], [-80.8207, 35.5749]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-35-profile",
+        "farm_id": 35,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "8feb4cc2-b967-42e6-a678-9eada4ab87a9",
+      "text": "Farm profile: id=36, name=AI Farm 202603052216, crop_type=Not specified. Boundary polygon=[[-80.8207, 35.5749], [-80.80069999999999, 35.5749], [-80.80069999999999, 35.594899999999996], [-80.8207, 35.594899999999996], [-80.8207, 35.5749]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-36-profile",
+        "farm_id": 36,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "06e01deb-7d33-4491-a975-54a26ba5aff0",
+      "text": "Farm profile: id=37, name=AI Farm 202603052216, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-37-profile",
+        "farm_id": 37,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "fccb53b1-f6dd-4912-8ec6-44950d40f1f8",
+      "text": "Farm profile: id=38, name=AI Farm 202603052216, crop_type=Not specified. Boundary polygon=[[-80.8207, 35.5749], [-80.80069999999999, 35.5749], [-80.80069999999999, 35.594899999999996], [-80.8207, 35.594899999999996], [-80.8207, 35.5749]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-38-profile",
+        "farm_id": 38,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "ad6c064f-bfbf-443f-942f-81a782eac798",
+      "text": "Farm profile: id=39, name=GreenAcres, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-39-profile",
+        "farm_id": 39,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "98ad94d6-df8c-480a-b4cb-7cba1b1cfa02",
+      "text": "Farm profile: id=40, name=AI Farm 202603052216, crop_type=Not specified. Boundary polygon=[[-76.8199, 18.0079], [-76.7999, 18.0079], [-76.7999, 18.027900000000002], [-76.8199, 18.027900000000002], [-76.8199, 18.0079]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-40-profile",
+        "farm_id": 40,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "8c68a43c-5907-47bf-9b9f-ef2f5335dbfe",
+      "text": "Farm profile: id=41, name=jho, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-41-profile",
+        "farm_id": 41,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "ab8dc59d-581c-4168-946e-13cb59959d80",
+      "text": "Farm profile: id=42, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-42-profile",
+        "farm_id": 42,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "942b7885-d4d1-49e6-8e62-bb3dda87a94e",
+      "text": "Farm profile: id=43, name=king, crop_type=Not specified. Boundary polygon=[[-76.8199041, 18.007874299999997], [-76.79990409999999, 18.007874299999997], [-76.79990409999999, 18.0278743], [-76.8199041, 18.0278743], [-76.8199041, 18.007874299999997]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-43-profile",
+        "farm_id": 43,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "088730cf-70a3-4a12-937e-c55fdc2c9010",
+      "text": "Farm profile: id=44, name=ham, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-44-profile",
+        "farm_id": 44,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "2adc2f12-0cfd-4beb-946f-d8b909a15913",
+      "text": "Farm profile: id=45, name=tg, crop_type=Not specified. Boundary polygon=[[-122.4294, 37.764900000000004], [-122.40939999999999, 37.764900000000004], [-122.40939999999999, 37.7849], [-122.4294, 37.7849], [-122.4294, 37.764900000000004]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-45-profile",
+        "farm_id": 45,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "da90f030-2eec-4795-9151-5b71af51bcc7",
+      "text": "Farm profile: id=46, name=kingston, crop_type=Not specified. Boundary polygon=[[-76.81898390710354, 18.010712897639387], [-76.79898390710353, 18.010712897639387], [-76.79898390710353, 18.03071289763939], [-76.81898390710354, 18.03071289763939], [-76.81898390710354, 18.010712897639387]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-46-profile",
+        "farm_id": 46,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "bc422cbe-5672-40df-aeb9-fd5a80264ec8",
+      "text": "Farm profile: id=47, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.5030295, 44.2234401], [-76.48302949999999, 44.2234401], [-76.48302949999999, 44.243440099999994], [-76.5030295, 44.243440099999994], [-76.5030295, 44.2234401]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-47-profile",
+        "farm_id": 47,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "47ce5ccd-b4b3-4c41-8eac-6d40fdac9848",
+      "text": "Farm profile: id=48, name=jhon, crop_type=Not specified. Boundary polygon=[[-76.5030295, 44.2234401], [-76.48302949999999, 44.2234401], [-76.48302949999999, 44.243440099999994], [-76.5030295, 44.243440099999994], [-76.5030295, 44.2234401]].",
+      "metadata": {
+        "source_type": "farm_profile",
+        "title": "farm-48-profile",
+        "farm_id": 48,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a3a10742-1c59-4194-8a3b-a016d5229dfe",
+      "text": "Yield estimate record for farm_id=2 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-30",
+        "farm_id": 2,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "415b56c1-eb8f-4493-a941-400d2e6aed7a",
+      "text": "Yield estimate record for farm_id=4 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-31",
+        "farm_id": 4,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "0f46ddf9-439a-45e3-8979-acab6f2e7319",
+      "text": "Yield estimate record for farm_id=5 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-32",
+        "farm_id": 5,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "bba91e06-1d12-448e-af23-164f7e6d0d66",
+      "text": "Yield estimate record for farm_id=8 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-33",
+        "farm_id": 8,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "197b6d23-4da9-47cb-96aa-adb483e29735",
+      "text": "Yield estimate record for farm_id=9 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-34",
+        "farm_id": 9,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "9d6a9727-85d7-4173-a811-6e9f372b6587",
+      "text": "Yield estimate record for farm_id=12 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-35",
+        "farm_id": 12,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "6b9e5997-c6cf-429d-824d-db5c34b9274b",
+      "text": "Yield estimate record for farm_id=13 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-36",
+        "farm_id": 13,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "d95466db-2482-40d8-bac7-921187656d49",
+      "text": "Yield estimate record for farm_id=16 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-37",
+        "farm_id": 16,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c300e8a2-b60b-470c-87bd-7f07288deabb",
+      "text": "Yield estimate record for farm_id=17 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-38",
+        "farm_id": 17,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "5e630367-ac30-4cfd-a66f-47958c8016f0",
+      "text": "Yield estimate record for farm_id=18 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-39",
+        "farm_id": 18,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c510d46b-46ca-4873-9cb7-59c5d537d643",
+      "text": "Yield estimate record for farm_id=19 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-40",
+        "farm_id": 19,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "53f10e55-ac94-4e6e-b4f3-75362345998b",
+      "text": "Yield estimate record for farm_id=20 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-41",
+        "farm_id": 20,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "70edaed1-89f7-4a40-842c-01ac0d0fa421",
+      "text": "Yield estimate record for farm_id=21 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-42",
+        "farm_id": 21,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "642fddb7-2868-43a8-b61b-5a840b8c6e77",
+      "text": "Yield estimate record for farm_id=22 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-43",
+        "farm_id": 22,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "bec36d03-1406-4977-a374-ce044f8b9563",
+      "text": "Yield estimate record for farm_id=23 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-44",
+        "farm_id": 23,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "7f29841b-73dd-4005-bf06-e06d7a03f82c",
+      "text": "Yield estimate record for farm_id=25 on date=2026-03-03: yield_estimate=0.93, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-45",
+        "farm_id": 25,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "fc1fc868-e715-41d6-9e0d-2c30a18d404b",
+      "text": "Yield estimate record for farm_id=2 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-8",
+        "farm_id": 2,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "f19c8f23-3f3e-47b9-9823-b6abd8cbc9ac",
+      "text": "Yield estimate record for farm_id=4 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-9",
+        "farm_id": 4,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e839e443-fbfb-4175-a52e-6d610f91916f",
+      "text": "Yield estimate record for farm_id=5 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-10",
+        "farm_id": 5,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a8545bcc-f379-4b37-beab-4f523d419145",
+      "text": "Yield estimate record for farm_id=8 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-11",
+        "farm_id": 8,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "45a4205a-3382-48c3-af7f-8bd0ee31187f",
+      "text": "Yield estimate record for farm_id=9 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-12",
+        "farm_id": 9,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "c256fcae-9e89-4831-af94-4555a816d24f",
+      "text": "Yield estimate record for farm_id=12 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-13",
+        "farm_id": 12,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e3b47734-5ef7-4990-aa22-f63a90e2b8de",
+      "text": "Yield estimate record for farm_id=13 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-14",
+        "farm_id": 13,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "87c41e4b-6cbf-4073-97be-7e5f66d7fb71",
+      "text": "Yield estimate record for farm_id=3 on date=2026-02-26: yield_estimate=1.6, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-15",
+        "farm_id": 3,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "1e735e31-d8bd-4929-a821-3612085cfd4b",
+      "text": "Yield estimate record for farm_id=6 on date=2026-02-26: yield_estimate=1.6, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-16",
+        "farm_id": 6,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "bbf0b685-7793-401e-8d75-99d264ef1d33",
+      "text": "Yield estimate record for farm_id=10 on date=2026-02-26: yield_estimate=1.6, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-17",
+        "farm_id": 10,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "8a409588-8286-4dd3-a3c8-7af4cf1fd840",
+      "text": "Yield estimate record for farm_id=11 on date=2026-02-26: yield_estimate=1.6, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-18",
+        "farm_id": 11,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "00a68237-da19-4eff-b959-6a10294b7e51",
+      "text": "Yield estimate record for farm_id=14 on date=2026-02-26: yield_estimate=1.6, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-19",
+        "farm_id": 14,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "87fb53f6-f95f-4bf8-94e9-e066259ec445",
+      "text": "Yield estimate record for farm_id=15 on date=2026-02-26: yield_estimate=0.34, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-20",
+        "farm_id": 15,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "443af0ac-ad28-42c1-9864-fceffb6e0691",
+      "text": "Yield estimate record for farm_id=16 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-21",
+        "farm_id": 16,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "f3246c9a-3c8e-4d5b-9cf4-2082b0f87ed0",
+      "text": "Yield estimate record for farm_id=17 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-22",
+        "farm_id": 17,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "a17a038f-5a04-49cc-a556-c011daefdd9a",
+      "text": "Yield estimate record for farm_id=18 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-23",
+        "farm_id": 18,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "b9844f96-dc08-490d-b02b-f7c3e7a344b7",
+      "text": "Yield estimate record for farm_id=19 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-24",
+        "farm_id": 19,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "821139d6-8cf3-47a2-9291-8e338f4df2c8",
+      "text": "Yield estimate record for farm_id=20 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-25",
+        "farm_id": 20,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "1fe4a478-517a-4577-a6fd-96ba7bca7cdf",
+      "text": "Yield estimate record for farm_id=21 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-26",
+        "farm_id": 21,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "4f8ef90a-cf98-4209-8eaf-7e4819ba6017",
+      "text": "Yield estimate record for farm_id=22 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-27",
+        "farm_id": 22,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "1382440f-606a-4be2-a33b-0f11246e254e",
+      "text": "Yield estimate record for farm_id=23 on date=2026-02-26: yield_estimate=1.33, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-28",
+        "farm_id": 23,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "fbe65bcb-b7b1-41b8-aac4-4cf3f99f16bf",
+      "text": "Yield estimate record for farm_id=24 on date=2026-02-26: yield_estimate=1.6, notes=Auto-updated from /estimate-yield.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-29",
+        "farm_id": 24,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "6009f38c-6ff7-4c4c-b35a-479a68b439cb",
+      "text": "Yield estimate record for farm_id=1 on date=2025-08-20: yield_estimate=4350.0, notes=Late season prediction.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-7",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e6a85360-ce2b-4cdc-abc0-021cf71c838a",
+      "text": "Yield estimate record for farm_id=1 on date=2025-06-20: yield_estimate=4300.0, notes=Mid-season update.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-6",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "923f014e-41a6-429f-ab30-fa71c0f620d1",
+      "text": "Yield estimate record for farm_id=1 on date=2025-05-05: yield_estimate=4200.0, notes=Early season prediction.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-5",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "64c08f67-8fa7-45ea-9fb0-ae94b4478883",
+      "text": "Yield estimate record for farm_id=1 on date=2024-08-15: yield_estimate=4500.0, notes=Late season prediction.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-4",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "538ccd94-29a0-4ef5-8391-2e9b6968a892",
+      "text": "Yield estimate record for farm_id=1 on date=2024-06-30: yield_estimate=8500.5, notes=Good growth.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-1",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "85f65dd7-e122-437d-b902-0587d3041937",
+      "text": "Yield estimate record for farm_id=1 on date=2024-06-15: yield_estimate=4450.0, notes=Mid-season update.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-3",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "787e86a9-ed0b-43cd-a2fc-f5c9a2928744",
+      "text": "Yield estimate record for farm_id=1 on date=2024-05-01: yield_estimate=4350.0, notes=Early season prediction.",
+      "metadata": {
+        "source_type": "yield_estimate",
+        "title": "yield-2",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "b0b00e4d-12ad-48fc-9eb1-217aa8bf1894",
+      "text": "Farmer report for farm_id=1 on date=2025-10-15: actual_yield=4350.0, notes=Recovery evident in second harvest.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-4",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "6c639ed2-5eaa-403c-82dd-c313c1d67d35",
+      "text": "Farmer report for farm_id=1 on date=2025-09-10: actual_yield=4200.0, notes=Moderate harvest, conditions were challenging.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-3",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "4476d12b-3539-44e5-a5fb-75214c8890b7",
+      "text": "Farmer report for farm_id=1 on date=2025-09-05: actual_yield=4400.0, notes=Final harvest - exceeded!.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-10",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "55977601-c66b-46c8-89bc-3b9bdd56343a",
+      "text": "Farmer report for farm_id=1 on date=2025-07-05: actual_yield=4250.0, notes=Mid-season - within range.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-9",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "2747e9e3-87f2-4e67-b15a-cc3d042bd1ae",
+      "text": "Farmer report for farm_id=1 on date=2025-05-20: actual_yield=4180.0, notes=Early assessment - slightly lower.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-8",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "4fd18d89-00d3-4fae-af86-94d975106373",
+      "text": "Farmer report for farm_id=1 on date=2024-10-20: actual_yield=4650.0, notes=Final harvest assessment.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-2",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "13d547f3-1366-44ad-b4e7-df2ef0203538",
+      "text": "Farmer report for farm_id=1 on date=2024-09-15: actual_yield=4500.0, notes=Good harvest, above expectations.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-1",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "f599b732-eb2b-4d5a-9330-078b6ab8c638",
+      "text": "Farmer report for farm_id=1 on date=2024-09-01: actual_yield=4520.0, notes=Final harvest.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-7",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "d2749be4-e5a1-45d0-9b05-2fcb4b945369",
+      "text": "Farmer report for farm_id=1 on date=2024-06-30: actual_yield=4480.0, notes=Mid-season harvest.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-6",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "e9bfafc9-2176-471f-a172-1a6c78d6bb64",
+      "text": "Farmer report for farm_id=1 on date=2024-05-15: actual_yield=4320.0, notes=Early assessment.",
+      "metadata": {
+        "source_type": "farmer_report",
+        "title": "farmer-report-5",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "f147b73c-f8e1-4b0e-8395-a9b9ad71ec9d",
+      "text": "Historical average for farm_id=1, crop_type=maize, year=2025: avg=4300.0, min=3900.0, max=4700.0, samples=5.",
+      "metadata": {
+        "source_type": "historical_yield",
+        "title": "historical-2",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "546d1f7e-581e-4569-bc9e-f0eb25d7929c",
+      "text": "Historical average for farm_id=1, crop_type=Corn, year=2025: avg=4350.0, min=3950.0, max=4750.0, samples=5.",
+      "metadata": {
+        "source_type": "historical_yield",
+        "title": "historical-4",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "52cb9ee6-70b5-4d4c-a8c7-13359758d05e",
+      "text": "Historical average for farm_id=1, crop_type=maize, year=2024: avg=4400.0, min=4000.0, max=4800.0, samples=5.",
+      "metadata": {
+        "source_type": "historical_yield",
+        "title": "historical-1",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    },
+    {
+      "id": "09e1468a-7185-4eb4-a503-512c46d3bca2",
+      "text": "Historical average for farm_id=1, crop_type=Corn, year=2024: avg=4400.0, min=4000.0, max=4800.0, samples=5.",
+      "metadata": {
+        "source_type": "historical_yield",
+        "title": "historical-3",
+        "farm_id": 1,
+        "chunk": 0
+      }
+    }
+  ]
+}

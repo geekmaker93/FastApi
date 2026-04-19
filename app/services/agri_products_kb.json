@@ -1,0 +1,173 @@
+{
+  "schema_version": "1.0",
+  "search_aliases": [
+    "what should i buy",
+    "where can i get fertilizer",
+    "what product for blight",
+    "my crop has pests",
+    "top soil improvement",
+    "yellow leaves treatment"
+  ],
+  "categories": {
+    "fertilizer": {
+      "products": [
+        {"name": "Balanced NPK Blend", "example_npk": "15-15-15", "use_for": ["mid_vigor"]},
+        {"name": "Nitrogen-Forward NPK", "example_npk": "20-10-10", "use_for": ["early_vigor"]},
+        {"name": "Phosphorus-Forward NPK", "example_npk": "12-24-12", "use_for": ["high_vigor"]}
+      ]
+    },
+    "soil_amendment": {
+      "products": [
+        {"name": "Agricultural Lime", "use_for": ["acidic_soil"]},
+        {"name": "Gypsum", "use_for": ["calcium_support"]},
+        {"name": "Compost", "use_for": ["low_organic_matter"]}
+      ]
+    },
+    "pesticide": {
+      "products": [
+        {"name": "Targeted Fungicide", "use_for": ["fungal_pressure"]},
+        {"name": "Targeted Insecticide", "use_for": ["pest_pressure"]}
+      ]
+    }
+  },
+  "sourcing": {
+    "national_retailers": [
+      {"name": "Lowe's", "type": "retailer", "notes": "Garden/farm supplies vary by region"},
+      {"name": "Home Depot", "type": "retailer", "notes": "Stock varies by store"},
+      {"name": "Tractor Supply", "type": "farm_store", "notes": "Farm-focused product range"}
+    ],
+    "local_channels": [
+      {"name": "Local agricultural co-op", "type": "co-op", "notes": "Often best for crop-specific recommendations"},
+      {"name": "Certified agro-dealer", "type": "dealer", "notes": "Verify product registration and label"}
+    ],
+    "store_locations": [
+      {
+        "name": "Lowe's Mooresville",
+        "type": "retailer",
+        "latitude": 35.5849,
+        "longitude": -80.8107,
+        "address": "1000 Lowes Blvd, Mooresville, NC 28117, USA",
+        "phone": "+1-800-445-6937",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"]
+      },
+      {
+        "name": "Home Depot Atlanta Support",
+        "type": "retailer",
+        "latitude": 33.8474,
+        "longitude": -84.4260,
+        "address": "2455 Paces Ferry Rd SE, Atlanta, GA 30339, USA",
+        "phone": "+1-800-466-3337",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"]
+      },
+      {
+        "name": "Tractor Supply Brentwood",
+        "type": "farm_store",
+        "latitude": 36.0331,
+        "longitude": -86.8047,
+        "address": "5401 Virginia Way, Brentwood, TN 37027, USA",
+        "phone": "+1-877-718-6750",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"]
+      },
+      {
+        "name": "JCSD Kingston Cooperative",
+        "type": "co-op",
+        "latitude": 18.0179,
+        "longitude": -76.8099,
+        "address": "85 King Street, Kingston, Jamaica",
+        "phone": "+1-876-922-1450",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"],
+        "country": "Jamaica",
+        "notes": "Jamaica Co-operative Societies Development - main hub"
+      },
+      {
+        "name": "Nurserymen's Association - Kingston",
+        "type": "association",
+        "latitude": 18.0250,
+        "longitude": -76.8050,
+        "address": "Hope Gardens, Kingston 6, Jamaica",
+        "phone": "+1-876-927-1257",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"],
+        "country": "Jamaica",
+        "notes": "Local nursery association with agricultural supplier contacts"
+      },
+      {
+        "name": "Agro-Plus Distributor - Spanish Town",
+        "type": "dealer",
+        "latitude": 18.0063,
+        "longitude": -76.7597,
+        "address": "2 Saunders Street, Spanish Town, St. Catherine, Jamaica",
+        "phone": "+1-876-984-2109",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"],
+        "country": "Jamaica",
+        "notes": "Agricultural inputs distributor for central Jamaica"
+      },
+      {
+        "name": "Green Valley Agro-Dealer - May Pen",
+        "type": "dealer",
+        "latitude": 18.2484,
+        "longitude": -77.2386,
+        "address": "Main Street, May Pen, Clarendon, Jamaica",
+        "phone": "+1-876-986-0275",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"],
+        "country": "Jamaica",
+        "notes": "Clarendon agricultural supplies - central Jamaica location"
+      },
+      {
+        "name": "Island Agri-Supplies - Montego Bay",
+        "type": "retailer",
+        "latitude": 18.4716,
+        "longitude": -77.2868,
+        "address": "Sam Sharpe Square, Montego Bay, Jamaica",
+        "phone": "+1-876-952-0900",
+        "item_types": ["fertilizer", "soil_amendment", "pesticide"],
+        "country": "Jamaica",
+        "notes": "Western Jamaica agricultural supplier"
+      }
+    ]
+  },
+  "procurement_guidelines": [
+    "Match product label to crop type and growth stage before purchase.",
+    "Confirm active ingredient and registration status in your jurisdiction.",
+    "Buy only quantities that can be applied within recommended windows."
+  ],
+  "issue_to_product_type": [
+    {
+      "issue": "fungal_pressure",
+      "recommended_types": ["Targeted Fungicide", "Compost"],
+      "why": "Manage active disease pressure and improve canopy-zone resilience over time."
+    },
+    {
+      "issue": "pest_pressure",
+      "recommended_types": ["Targeted Insecticide"],
+      "why": "Use threshold-based targeted control rather than broad calendar spraying."
+    },
+    {
+      "issue": "acidic_soil",
+      "recommended_types": ["Agricultural Lime"],
+      "why": "Supports pH correction and nutrient availability when soil tests confirm need."
+    },
+    {
+      "issue": "low_organic_matter",
+      "recommended_types": ["Compost", "Gypsum"],
+      "why": "Improves soil structure and long-term nutrient cycling."
+    }
+  ],
+  "recommendation_examples": [
+    {
+      "user_question": "Leaves have spots after humid weather. What should I get?",
+      "recommended_flow": [
+        "Confirm symptom pattern and disease risk conditions first.",
+        "Recommend targeted fungicide options available in nearby stores.",
+        "Add one preventive cultural step: airflow, sanitation, irrigation timing."
+      ]
+    },
+    {
+      "user_question": "Field is weak and yellow. Which product helps?",
+      "recommended_flow": [
+        "Check likely nutrient stress and soil moisture context.",
+        "Suggest staged nutrient correction product class, not single guaranteed cure.",
+        "Advise follow-up observation window and local agronomist verification."
+      ]
+    }
+  ]
+}

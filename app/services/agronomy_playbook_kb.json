@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0",
+  "notes": "Agronomy playbook for practical, field-level decision support. Use with local labels and extension guidance.",
+  "synonyms": {
+    "nitrogen_deficiency": ["yellow leaves", "pale leaves", "slow growth", "weak canopy"],
+    "water_stress": ["wilting", "rolled leaves", "leaf curl", "dry topsoil"],
+    "fungal_pressure": ["leaf spots", "blight", "mildew", "mold"],
+    "pest_pressure": ["holes in leaves", "chewed leaves", "insect damage", "aphids", "armyworm"]
+  },
+  "crop_stage_guidance": [
+    {
+      "crop": "maize",
+      "stage": "emergence_to_v3",
+      "signals": ["stand establishment", "even emergence", "starter vigor"],
+      "actions": [
+        "Maintain weed-free rows during first 3 to 4 weeks.",
+        "Avoid waterlogging in seedling stage; improve drainage if needed.",
+        "If chlorosis appears early, confirm nitrogen and sulfur availability with a quick soil check."
+      ],
+      "cautions": [
+        "Do not over-apply nitrogen in one shot on sandy soils.",
+        "Avoid herbicide stress under heat and moisture deficit."
+      ]
+    },
+    {
+      "crop": "maize",
+      "stage": "v6_to_tasseling",
+      "signals": ["rapid canopy growth", "high nitrogen demand", "water sensitivity"],
+      "actions": [
+        "Split nitrogen application across growth windows where rainfall risk is high.",
+        "Prioritize irrigation consistency to reduce stress before tasseling.",
+        "Scout for foliar disease weekly in humid conditions."
+      ],
+      "cautions": [
+        "Water stress near tasseling can cause major yield loss.",
+        "Unbalanced nitrogen and potassium can increase lodging risk."
+      ]
+    },
+    {
+      "crop": "rice",
+      "stage": "tillering_to_panicle",
+      "signals": ["tiller count", "uniform stand", "leaf color"],
+      "actions": [
+        "Keep water depth stable based on local rice management practice.",
+        "Use split nutrient timing to match tillering and panicle initiation.",
+        "Monitor for blast risk when humidity is persistently high."
+      ],
+      "cautions": [
+        "Excess nitrogen late can increase disease pressure and lodging.",
+        "Poor drainage around field edges can drive patchy stress."
+      ]
+    },
+    {
+      "crop": "soybean",
+      "stage": "flowering_to_pod_fill",
+      "signals": ["flower retention", "pod set", "canopy temperature"],
+      "actions": [
+        "Protect moisture during flowering and pod set windows.",
+        "Prioritize pest scouting for pod feeders and defoliators.",
+        "Keep field records of stress windows for next-season adjustments."
+      ],
+      "cautions": [
+        "Short drought during pod set can reduce final yield strongly.",
+        "Avoid unnecessary sprays without threshold-based scouting."
+      ]
+    }
+  ],
+  "symptom_to_likely_causes": [
+    {
+      "symptom": "older leaves turning yellow first",
+      "likely_causes": ["nitrogen deficiency", "root restriction", "waterlogging history"],
+      "checks": ["review recent rainfall", "inspect root health", "confirm soil nitrogen status"],
+      "first_actions": ["apply staged nitrogen where appropriate", "improve drainage", "reassess in 5 to 7 days"]
+    },
+    {
+      "symptom": "leaf spots expanding during humid weather",
+      "likely_causes": ["fungal disease pressure"],
+      "checks": ["check lower canopy first", "inspect lesion pattern", "review humidity and wet-leaf duration"],
+      "first_actions": ["remove heavily infected debris where practical", "improve airflow", "consider registered fungicide per label and threshold"]
+    },
+    {
+      "symptom": "wilting at midday with recovery at evening",
+      "likely_causes": ["early water stress", "shallow roots", "compacted top layer"],
+      "checks": ["soil moisture at 10 to 20 cm", "root depth", "compaction signs"],
+      "first_actions": ["adjust irrigation timing", "reduce surface evaporation with residue or mulch", "break compaction in next prep cycle"]
+    },
+    {
+      "symptom": "irregular patches of poor growth",
+      "likely_causes": ["drainage variability", "soil pH variability", "localized pest pressure"],
+      "checks": ["map low spots", "run targeted pH checks", "inspect roots and stems in affected zones"],
+      "first_actions": ["zone-based correction instead of whole-field uniform treatment", "track affected coordinates"]
+    }
+  ],
+  "irrigation_rules_of_thumb": [
+    {
+      "condition": "hot_and_windy",
+      "signals": ["temperature above 32C", "high evapotranspiration", "leaf rolling"],
+      "guidance": "Use shorter, more frequent irrigation cycles to reduce stress spikes."
+    },
+    {
+      "condition": "recent_heavy_rain",
+      "signals": ["field saturation", "standing water", "low oxygen risk"],
+      "guidance": "Delay additional irrigation and prioritize drainage checks before the next watering decision."
+    },
+    {
+      "condition": "flowering_or_reproductive_stage",
+      "signals": ["flowering", "pod set", "tasseling", "grain fill"],
+      "guidance": "Avoid moisture gaps in reproductive windows; these stages are highly yield-sensitive."
+    }
+  ],
+  "question_patterns": [
+    {
+      "user_phrases": ["what should i do today", "my crop is yellowing", "why are leaves curling", "is this blight"],
+      "recommendation_style": "Start with a decision, state evidence, then provide a 3-step action plan and one safety caution."
+    }
+  ],
+  "safety_and_compliance": [
+    "Always follow product labels and local registration rules.",
+    "Use threshold-based pest and disease decisions where possible.",
+    "Do not mix products unless label compatibility is confirmed.",
+    "Escalate to local agronomist or extension service for severe or fast-spreading symptoms."
+  ]
+}
