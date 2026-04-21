@@ -2,17 +2,28 @@
 Web search and external data integration for AI context enrichment.
 Provides real-time information from Google and other sources.
 """
-import os
 import logging
+import os
 from typing import Any, Dict, List, Optional
+
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Configuration
-GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
-GOOGLE_SEARCH_ENGINE_ID = os.getenv("GOOGLE_SEARCH_ENGINE_ID", "")
-SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
+
+def _google_search_api_key() -> str:
+    return os.getenv("GOOGLE_SEARCH_API_KEY", "").strip()
+
+
+def _google_search_engine_id() -> str:
+    return os.getenv("GOOGLE_SEARCH_ENGINE_ID", "").strip()
+
+
+def _serpapi_key() -> str:
+    return os.getenv("SERPAPI_KEY", "").strip()
 
 def search_google_custom(query: str, num_results: int = 3) -> List[Dict[str, Any]]:
     """
@@ -27,15 +38,18 @@ def search_google_custom(query: str, num_results: int = 3) -> List[Dict[str, Any
     Returns:
         List of search results with title, snippet, link
     """
-    if not GOOGLE_SEARCH_API_KEY or not GOOGLE_SEARCH_ENGINE_ID:
+    google_search_api_key = _google_search_api_key()
+    google_search_engine_id = _google_search_engine_id()
+
+    if not google_search_api_key or not google_search_engine_id:
         logger.warning("Google Custom Search not configured (no API key/engine ID)")
         return []
     
     try:
         url = "https://www.googleapis.com/customsearch/v1"
         params = {
-            "key": GOOGLE_SEARCH_API_KEY,
-            "cx": GOOGLE_SEARCH_ENGINE_ID,
+            "key": google_search_api_key,
+            "cx": google_search_engine_id,
             "q": query,
             "num": num_results,
         }
@@ -76,14 +90,16 @@ def search_serpapi(query: str, num_results: int = 3, location: str = "United Sta
     Returns:
         List of search results with title, snippet, link
     """
-    if not SERPAPI_KEY:
+    serpapi_key = _serpapi_key()
+
+    if not serpapi_key:
         logger.warning("SerpAPI not configured (no API key)")
         return []
     
     try:
         url = "https://serpapi.com/search"
         params = {
-            "api_key": SERPAPI_KEY,
+            "api_key": serpapi_key,
             "q": query,
             "num": num_results,
             "location": location,
@@ -237,15 +253,18 @@ def smart_search(query: str, location: Optional[str] = None, num_results: int = 
     """
     results = []
     search_method = "none"
+    google_search_api_key = _google_search_api_key()
+    google_search_engine_id = _google_search_engine_id()
+    serpapi_key = _serpapi_key()
     
     # Try Google Custom Search first (best quality)
-    if GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID:
+    if google_search_api_key and google_search_engine_id:
         results = search_google_custom(query, num_results)
         if results:
             search_method = "google_custom_search"
     
     # Try SerpAPI if Google didn't work
-    if not results and SERPAPI_KEY:
+    if not results and serpapi_key:
         results = search_serpapi(query, num_results, location or "United States")
         if results:
             search_method = "serpapi"

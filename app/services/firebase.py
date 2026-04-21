@@ -1,13 +1,16 @@
+import json
 import logging
+import os
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from app.core.config import FIREBASE_CREDENTIALS_PATH
 from app.models.db_models import User, UserDeviceToken
 
 logger = logging.getLogger("crop_backend.firebase")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON", "").strip()
 
 _DEFAULT_CREDENTIAL_FILES = (
     PROJECT_ROOT / "serviceAccountKey.json",
@@ -20,27 +23,38 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-def _resolve_credentials_path() -> Optional[Path]:
+def _resolve_credentials_source() -> tuple[Optional[dict[str, Any]], Optional[Path]]:
+    if FIREBASE_CREDENTIALS_JSON:
+        try:
+            payload = json.loads(FIREBASE_CREDENTIALS_JSON)
+        except json.JSONDecodeError:
+            logger.exception("Firebase initialization skipped: FIREBASE_CREDENTIALS_JSON is not valid JSON")
+            return None, None
+        if not isinstance(payload, dict):
+            logger.warning("Firebase initialization skipped: FIREBASE_CREDENTIALS_JSON must decode to a JSON object")
+            return None, None
+        return payload, None
+
     if FIREBASE_CREDENTIALS_PATH:
         candidate = Path(FIREBASE_CREDENTIALS_PATH).expanduser()
         if not candidate.is_absolute():
             candidate = PROJECT_ROOT / candidate
-        return candidate
+        return None, candidate
 
     for candidate in _DEFAULT_CREDENTIAL_FILES:
         if candidate.is_file():
-            return candidate
+            return None, candidate
 
-    return None
+    return None, None
 
 
 def initialize_firebase() -> bool:
-    credentials_path = _resolve_credentials_path()
-    if credentials_path is None:
-        logger.info("Firebase initialization skipped: no Firebase service account file found")
+    credentials_payload, credentials_path = _resolve_credentials_source()
+    if credentials_payload is None and credentials_path is None:
+        logger.info("Firebase initialization skipped: no Firebase credentials configured")
         return False
 
-    if not credentials_path.is_file():
+    if credentials_path is not None and not credentials_path.is_file():
         logger.warning(
             "Firebase initialization skipped: credentials file not found at %s",
             credentials_path,
@@ -58,7 +72,8 @@ def initialize_firebase() -> bool:
         return True
 
     try:
-        cred = credentials.Certificate(str(credentials_path))
+        cred_source: dict[str, Any] | str = credentials_payload if credentials_payload is not None else str(credentials_path)
+        cred = credentials.Certificate(cred_source)
         firebase_admin.initialize_app(cred)
         logger.info("Firebase Admin initialized")
         return True

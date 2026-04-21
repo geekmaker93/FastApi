@@ -1,0 +1,69 @@
+services:
+  - type: web
+    name: crop-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CLOUD_AI_MODEL
+        value: gemini-2.5-flash-lite
+      - key: CLOUD_AI_TIMEOUT
+        value: "35"
+      - key: APP_BASE_URL
+        sync: false
+      - key: GOOGLE_SEARCH_API_KEY
+        sync: false
+      - key: GOOGLE_SEARCH_ENGINE_ID
+        sync: false
+      - key: SERPAPI_KEY
+        sync: false
+      - key: AGRO_API_KEY
+        sync: false
+      - key: FARMONAUT_API_KEY
+        sync: false
+      - key: GEE_PROJECT_ID
+        sync: false
+      - key: PERENUAL_API_KEY
+        sync: false
+      - key: TREFLE_API_KEY
+        sync: false
+      - key: USDA_API_KEY
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+      - key: EMAIL
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: LOG_MONITOR_TOKEN
+        sync: false
+      - key: EXPOSE_AI_INTERNALS
+        value: "false"
+      - key: AI_CONVERSATION_MAX_TURNS
+        value: "6"
+      - key: AI_SUMMARY_TRIGGER_MESSAGES
+        value: "10"
+      - key: AI_SUMMARY_KEEP_RECENT_MESSAGES
+        value: "6"
+      - key: AI_SUMMARY_MAX_CHARS
+        value: "1600"
+      - key: AI_MAX_RAG
+        value: "2"
+      - key: AI_MAX_HISTORY
+        value: "5"
+      - key: AI_MAX_CROPS
+        value: "3"
+      - key: FARM_LIVE_REFRESH_INTERVAL_S
+        value: "900"
+      - key: FARM_LIVE_NDVI_DELTA
+        value: "0.02"
