@@ -463,23 +463,37 @@ def fetch_external_sources_bundle(
 
     crop_knowledge = _build_crop_knowledge_card(crop_query, perenual, trefle)
 
-    available_count = sum(1 for source in (nasa, noaa, esa, perenual, trefle) if source.get("available"))
+    def _is_required_source(key: str, payload: Dict[str, Any]) -> bool:
+        detail = str((payload or {}).get("detail") or "").strip().lower()
+        # NOAA is primarily US-focused, so out-of-coverage coordinates should not penalize availability.
+        if key == "noaa" and "coverage_unavailable_for_coordinates" in detail:
+            return False
+        # ESA may legitimately have no recent scene for a point; treat this as optional.
+        if key == "esa" and "no_scene_found_for_location" in detail:
+            return False
+        return True
+
+    sources = {
+        "nasa": nasa,
+        "noaa": noaa,
+        "esa": esa,
+        "perenual": perenual,
+        "trefle": trefle,
+    }
+    required_keys = [key for key, payload in sources.items() if _is_required_source(key, payload)]
+    available_count = sum(1 for key in required_keys if bool((sources.get(key) or {}).get("available")))
+
     return {
         "coordinates": {
             "latitude": latitude,
             "longitude": longitude,
         },
-        "sources": {
-            "nasa": nasa,
-            "noaa": noaa,
-            "esa": esa,
-            "perenual": perenual,
-            "trefle": trefle,
-        },
+        "sources": sources,
         "crop_knowledge": crop_knowledge,
         "availability": {
             "available_count": available_count,
-            "total_sources": 5,
+            "total_sources": max(1, len(required_keys)),
+            "optional_sources": [key for key in sources.keys() if key not in required_keys],
         },
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }

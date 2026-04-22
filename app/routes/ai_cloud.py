@@ -1174,11 +1174,14 @@ def _build_local_crop_response(realtime_context: Dict[str, Any]) -> str:
         )
         return "\n".join(lines)
 
-    return (
+    details = (
         "I could not find enough plant records from external endpoints to give a data-backed crop recommendation right now. "
         + ("Current exclusions applied: " + ", ".join(excluded_categories) + ". " if excluded_categories else "")
         + "Please retry with a specific crop query so I can pull targeted Perenual/Trefle records and answer from those sources."
     )
+    if external_lines:
+        return "\n\n".join([details, external_lines])
+    return details
 
 
 def _extract_recommended_crop_from_answer(answer: str) -> Optional[str]:
@@ -1781,6 +1784,54 @@ def _extract_action_request(question: str, app_context: Dict[str, Any]) -> Dict[
     }
 
 
+def _extract_known_crop_from_text(text: str) -> Optional[str]:
+    lowered = str(text or "").lower()
+    for names in PLANT_TYPES.values():
+        for name in names:
+            token = str(name or "").strip().lower()
+            if token and re.search(rf"\b{re.escape(token)}s?\b", lowered):
+                return token
+    return None
+
+
+def _sanitize_crop_candidate(raw: str) -> str:
+    candidate = str(raw or "").strip(" .,;:!?\"'").lower()
+    if not candidate:
+        return ""
+
+    stop_words = {
+        "in",
+        "for",
+        "with",
+        "at",
+        "on",
+        "near",
+        "around",
+        "during",
+        "under",
+        "using",
+        "to",
+        "my",
+        "our",
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "but",
+    }
+    parts = [p for p in re.split(r"\s+", candidate) if p]
+    kept: List[str] = []
+    for part in parts:
+        if part in stop_words and kept:
+            break
+        if part not in stop_words:
+            kept.append(part)
+        if len(kept) >= 3:
+            break
+    return " ".join(kept)
+
+
 def _extract_crop_query(question: str, app_context: Dict[str, Any], farm_context: Dict[str, Any]) -> Optional[str]:
     crop_candidates = [
         str((farm_context or {}).get("crop_type") or "").strip(),
@@ -1791,6 +1842,12 @@ def _extract_crop_query(question: str, app_context: Dict[str, Any], farm_context
             return crop
 
     text = (question or "").strip()
+
+    # Prefer explicit known crop names mentioned in the question.
+    known_crop = _extract_known_crop_from_text(text)
+    if known_crop:
+        return known_crop
+
     patterns = [
         r"(?:plant|grow|sow|cultivate)\s+([a-z][a-z\s\-]{2,40})",
         r"(?:for|about)\s+([a-z][a-z\s\-]{2,40})",
@@ -1798,7 +1855,7 @@ def _extract_crop_query(question: str, app_context: Dict[str, Any], farm_context
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
         if match:
-            candidate = match.group(1).strip(" .,;:!?\"'")
+            candidate = _sanitize_crop_candidate(match.group(1))
             if candidate:
                 return candidate[:40]
     return None
@@ -2233,7 +2290,7 @@ def _format_external_sources_summary(realtime_context: Dict[str, Any]) -> str:
         if not src:
             continue
         status = "available" if src.get("available") else "unavailable"
-        detail = str(src.get("error") or "").strip()
+        detail = str(src.get("detail") or src.get("error") or "").strip()
         if detail:
             lines.append(f"- {key}: {status} ({detail})")
         else:

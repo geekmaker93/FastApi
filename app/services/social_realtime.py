@@ -31,19 +31,31 @@ class SocialConnectionManager:
         sockets = self._connections.get(user_id)
         return bool(sockets)
 
-    async def send_to_user(self, user_id: str, payload: Dict[str, Any]) -> None:
+    async def send_to_user(self, user_id: str, payload: Dict[str, Any]) -> bool:
         sockets = list(self._connections.get(user_id, set()))
+        if not sockets:
+            return False
+
         stale: list[WebSocket] = []
+        sent = False
         for websocket in sockets:
             try:
                 await websocket.send_json(payload)
+                sent = True
             except Exception:
                 stale.append(websocket)
 
         for websocket in stale:
             await self.disconnect(user_id, websocket)
 
+        return sent
+
     async def send_to_many(self, user_ids: Iterable[str], payload: Dict[str, Any]) -> None:
+        for user_id in user_ids:
+            await self.send_to_user(user_id, payload)
+
+    async def send_to_all(self, payload: Dict[str, Any]) -> None:
+        user_ids = list(self._connections.keys())
         for user_id in user_ids:
             await self.send_to_user(user_id, payload)
 

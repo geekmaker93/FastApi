@@ -598,6 +598,42 @@ async def _emit_presence_event(user_id: str, is_online: bool, last_seen: Optiona
     )
 
 
+async def _emit_feed_event(event_type: str, payload: dict) -> None:
+    await social_connection_manager.send_to_all(
+        {
+            "type": event_type,
+            **payload,
+        }
+    )
+
+
+async def _send_presence_snapshot(websocket: WebSocket, user_id: str) -> None:
+    db = SessionLocal()
+    try:
+        partner_ids = _conversation_partner_ids(db, user_id)
+        if not partner_ids:
+            return
+
+        users = (
+            db.query(User)
+            .filter(User.email.in_(partner_ids))
+            .all()
+        )
+        users_by_email = {user.email: user for user in users}
+    finally:
+        db.close()
+
+    for partner_id in partner_ids:
+        partner = users_by_email.get(partner_id)
+        await websocket.send_json(
+            {
+                "type": "online" if partner and partner.is_online else "offline",
+                "user_id": partner_id,
+                "last_seen": _last_seen_iso(partner.last_seen) if partner else None,
+            }
+        )
+
+
 async def _emit_delivery_events(recipient_id: str, messages: List[SocialMessage]) -> None:
     grouped: Dict[Tuple[str, int], List[int]] = defaultdict(list)
     for message in messages:
@@ -638,6 +674,7 @@ def _authenticate_websocket_token(token: str) -> User:
 def get_posts(
     offset: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
+    since_ms: Optional[int] = Query(None, ge=0),
     user_lat: Optional[float] = Query(None, ge=-90, le=90),
     user_lon: Optional[float] = Query(None, ge=-180, le=180),
     radius_km: float = Query(50.0, gt=0.0, le=1000.0),
@@ -648,13 +685,11 @@ def get_posts(
     me = current_user.email
     resolved_lat, resolved_lon = _resolve_user_coords(db, me, user_lat, user_lon)
 
-    posts = (
-        db.query(SocialPost)
-        .filter(SocialPost.created_at >= cutoff)
-        .order_by(SocialPost.created_at.desc())
-        .limit(1000)
-        .all()
-    )
+    query = db.query(SocialPost).filter(SocialPost.created_at >= cutoff)
+    if since_ms is not None:
+        query = query.filter(SocialPost.created_at > since_ms)
+
+    posts = query.order_by(SocialPost.created_at.desc()).limit(1000).all()
 
     ranked = _rank_posts_by_location(posts, me, resolved_lat, resolved_lon, radius_km)
     paged = ranked[offset: offset + limit]
@@ -663,6 +698,7 @@ def get_posts(
 
 @router.get("/geo-feed", response_model=List[GeoFeedItemOut])
 def get_geo_feed(
+    since_ms: Optional[int] = Query(None, ge=0),
     user_lat: Optional[float] = Query(None, ge=-90, le=90),
     user_lon: Optional[float] = Query(None, ge=-180, le=180),
     radius_km: float = Query(50.0, gt=0.0, le=1000.0),
@@ -672,14 +708,15 @@ def get_geo_feed(
     current_user: User = Depends(get_current_user),
 ):
     cutoff = int(time.time() * 1000) - POST_TTL_MS
-    posts = (
+    query = (
         db.query(SocialPost)
         .filter(SocialPost.created_at >= cutoff)
         .filter(SocialPost.latitude.isnot(None), SocialPost.longitude.isnot(None))
-        .order_by(SocialPost.created_at.desc())
-        .limit(1000)
-        .all()
     )
+    if since_ms is not None:
+        query = query.filter(SocialPost.created_at > since_ms)
+
+    posts = query.order_by(SocialPost.created_at.desc()).limit(1000).all()
 
     me = current_user.email
     resolved_lat, resolved_lon = _resolve_user_coords(db, me, user_lat, user_lon)
@@ -694,25 +731,26 @@ def get_geo_feed(
 def get_global_feed(
     offset: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
+    since_ms: Optional[int] = Query(None, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     cutoff = int(time.time() * 1000) - POST_TTL_MS
     me = current_user.email
-    posts = (
+    query = (
         db.query(SocialPost)
         .filter(SocialPost.created_at >= cutoff)
         .filter(SocialPost.is_global.is_(True))
-        .order_by(SocialPost.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
     )
+    if since_ms is not None:
+        query = query.filter(SocialPost.created_at > since_ms)
+
+    posts = query.order_by(SocialPost.created_at.desc()).offset(offset).limit(limit).all()
     return [_post_out(post, me) for post in posts]
 
 
 @router.post("/posts", response_model=PostOut, status_code=201)
-def create_post(
+async def create_post(
     body: PostCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -739,7 +777,14 @@ def create_post(
     db.add(post)
     db.commit()
     db.refresh(post)
-    return _post_out(post, me)
+    post_payload = _post_out(post, me)
+    await _emit_feed_event(
+        "post_created",
+        {
+            "post": post_payload,
+        },
+    )
+    return post_payload
 
 
 def _delete_post_media_if_local(image_url: Optional[str]) -> None:
@@ -763,7 +808,7 @@ def _delete_post_media_if_local(image_url: Optional[str]) -> None:
 
 
 @router.delete("/posts/{post_id}", status_code=204)
-def delete_post(
+async def delete_post(
     post_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -779,6 +824,13 @@ def delete_post(
     _delete_post_media_if_local(post.image_url)
     db.delete(post)
     db.commit()
+    await _emit_feed_event(
+        "post_deleted",
+        {
+            "post_id": int(post_id),
+            "user_id": current_user.email,
+        },
+    )
 
 
 # ─── Media upload ─────────────────────────────────────────────────────────────
@@ -1163,7 +1215,6 @@ async def send_message(
 
     me = current_user.email
     recipient_email = _conversation_peer(conv, me)
-    recipient_online = social_connection_manager.is_online(recipient_email)
     created_at = _now_ms()
     msg = SocialMessage(
         conversation_id=conv_id,
@@ -1171,8 +1222,8 @@ async def send_message(
         sender_name=_display(current_user),
         content=body.content,
         created_at=created_at,
-        is_delivered=recipient_online,
-        delivered_at=created_at if recipient_online else None,
+        is_delivered=False,
+        delivered_at=None,
         is_read=False,
     )
     db.add(msg)
@@ -1184,15 +1235,21 @@ async def send_message(
     db.refresh(msg)
 
     message_payload = _message_out(msg)
-    if recipient_online:
-        await social_connection_manager.send_to_user(
-            recipient_email,
-            {
-                "type": "message",
-                "conversation_id": conv_id,
-                "message": message_payload,
-            },
-        )
+    delivered_realtime = await social_connection_manager.send_to_user(
+        recipient_email,
+        {
+            "type": "message",
+            "conversation_id": conv_id,
+            "message": message_payload,
+        },
+    )
+
+    if delivered_realtime:
+        msg.is_delivered = True
+        msg.delivered_at = created_at
+        db.commit()
+        db.refresh(msg)
+        message_payload = _message_out(msg)
         await social_connection_manager.send_to_user(
             me,
             {
@@ -1283,6 +1340,7 @@ async def social_websocket(websocket: WebSocket, token: str = Query(...)):
             _set_user_presence(db, db_user, True)
         delivered_messages = _mark_messages_delivered(db, me)
         await websocket.send_json({"type": "connected", "user_id": me})
+        await _send_presence_snapshot(websocket, me)
         await _emit_presence_event(me, True, _last_seen_iso(db_user.last_seen) if db_user else None)
     finally:
         db.close()
