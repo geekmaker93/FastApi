@@ -34,7 +34,7 @@ load_dotenv()
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or "").strip()
 GEMINI_MODEL = os.getenv("CLOUD_AI_MODEL", "gemini-2.5-flash-lite").strip()
 GEMINI_TIMEOUT_SECONDS = int(os.getenv("CLOUD_AI_TIMEOUT", "35"))
 EXPOSE_AI_INTERNALS = os.getenv("EXPOSE_AI_INTERNALS", "false").strip().lower() == "true"

@@ -5,10 +5,14 @@ import time
 import uuid
 from typing import Any, Dict, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+load_dotenv()
+
 from app.routes import land, farm, satellite, soil_weather, vegetation, polygons, yields, ndvi, tiles, news, products, ai_cloud, data_sources, rag, auth, snapshots, users
 from app.routes import social as social_module
 from app.database import engine
