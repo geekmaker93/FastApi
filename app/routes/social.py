@@ -1265,19 +1265,19 @@ async def send_message(
                 "message_ids": [int(msg.id)],
             },
         )
-    else:
-        try:
-            send_message_notification(
-                db=db,
-                recipient_email=recipient_email,
-                sender_id=me,
-                sender_name=_display(current_user),
-                conversation_id=conv_id,
-                message_id=msg.id,
-                message_text=body.content,
-            )
-        except Exception:
-            logger.exception("Failed to send FCM notification for social message %s", msg.id)
+
+    try:
+        send_message_notification(
+            db=db,
+            recipient_email=recipient_email,
+            sender_id=me,
+            sender_name=_display(current_user),
+            conversation_id=conv_id,
+            message_id=msg.id,
+            message_text=body.content,
+        )
+    except Exception:
+        logger.exception("Failed to send FCM notification for social message %s", msg.id)
 
     return message_payload
 
