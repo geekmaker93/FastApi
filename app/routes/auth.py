@@ -236,7 +236,6 @@ def request_delete(
         {"sub": str(current_user.id), "email": current_user.email, "purpose": "delete_account"},
         expires_delta=timedelta(minutes=30),
     )
-    base_url = os.getenv("APP_BASE_URL", "http://localhost:18000")
     confirm_link = f"farmsense://confirm-delete?token={quote(token)}"
     try:
         send_delete_confirmation_email(current_user.email, confirm_link)

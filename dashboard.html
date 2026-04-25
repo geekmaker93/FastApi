@@ -224,12 +224,13 @@
     </div>
 
     <script>
+        const DEFAULT_RENDER_API = 'https://crop-backend.onrender.com';
         const API_BASE = (() => {
             const origin = globalThis.location.origin;
             if (origin && origin !== 'null' && !origin.startsWith('file:')) {
                 return origin.replace(/\/$/, '');
             }
-            return 'http://127.0.0.1:8000';
+            return DEFAULT_RENDER_API;
         })();
         let charts = {};
         let latestDashboardContext = null;

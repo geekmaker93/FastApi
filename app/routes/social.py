@@ -20,7 +20,7 @@ _NOMINATIM_HEADERS = {
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, WebSocket, WebSocketDisconnect, status
 from pydantic import AliasChoices, BaseModel, Field
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
@@ -114,6 +114,17 @@ class MessageCreate(BaseModel):
     content: str = Field(
         ...,
         validation_alias=AliasChoices("content", "message", "text"),
+    )
+    recipient_id: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("recipient_id", "receiver_id", "other_user_id", "to", "user_id"),
+    )
+
+
+class DirectMessageCreate(MessageCreate):
+    recipient_id: str = Field(
+        ...,
+        validation_alias=AliasChoices("recipient_id", "receiver_id", "other_user_id", "to", "user_id"),
     )
 
 
@@ -228,6 +239,47 @@ def _display_for_user_id(db: Session, user_id: str) -> str:
     if user:
         return _display(user)
     return user_id.split("@")[0]
+
+
+def _resolve_user_by_identifier(db: Session, identifier: str) -> Optional[User]:
+    raw = (identifier or "").strip()
+    if not raw:
+        return None
+
+    lowered = raw.lower()
+    user = db.query(User).filter(func.lower(User.email) == lowered).first()
+    if user:
+        return user
+
+    if raw.isdigit():
+        user = db.query(User).filter(User.id == int(raw)).first()
+        if user:
+            return user
+
+    # Allow a legacy fallback where older clients may pass a display name.
+    # Use only a unique match to avoid misrouting messages.
+    matches = (
+        db.query(User)
+        .filter(User.name.isnot(None), func.lower(User.name) == lowered)
+        .limit(2)
+        .all()
+    )
+    if len(matches) == 1:
+        return matches[0]
+
+    return None
+
+
+def _canonical_user_id(db: Optional[Session], identifier: str) -> str:
+    raw = (identifier or "").strip()
+    if not raw:
+        return ""
+
+    user = _resolve_user_by_identifier(db, raw) if db is not None else None
+    if user and user.email:
+        return user.email.strip().lower()
+
+    return raw.lower()
 
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -468,15 +520,97 @@ def _last_seen_iso(value: Optional[datetime]) -> Optional[str]:
 
 
 def _presence_out(user: Optional[User], fallback_user_id: str) -> dict:
+    user_id = _canonical_user_id(None, fallback_user_id) if user is None else user.email.strip().lower()
+    is_online = social_connection_manager.is_online(user_id)
+    if user is not None:
+        is_online = is_online or bool(user.is_online)
     return {
-        "user_id": fallback_user_id,
-        "is_online": bool(user.is_online) if user else False,
+        "user_id": user_id,
+        "is_online": is_online,
         "last_seen": _last_seen_iso(user.last_seen) if user else None,
     }
 
 
 def _conversation_peer(conv: SocialConversation, me: str) -> str:
     return conv.other_user_id if conv.owner_id == me else conv.owner_id
+
+
+def _get_or_create_conversation_by_target_user_id(db: Session, me: str, target_user_id: int) -> Optional[SocialConversation]:
+    target_user = db.query(User).filter(User.id == target_user_id).first()
+    if target_user is None:
+        return None
+
+    peer_email = (target_user.email or "").strip().lower()
+    if not peer_email or peer_email == me:
+        return None
+
+    existing = (
+        db.query(SocialConversation)
+        .filter(
+            or_(
+                (SocialConversation.owner_id == me) & (SocialConversation.other_user_id == peer_email),
+                (SocialConversation.owner_id == peer_email) & (SocialConversation.other_user_id == me),
+            )
+        )
+        .first()
+    )
+    if existing:
+        return existing
+
+    created_at = _now_ms()
+    conv = SocialConversation(
+        owner_id=me,
+        other_user_id=peer_email,
+        other_user_name=_display(target_user),
+        last_message=None,
+        updated_at=created_at,
+        unread_count=0,
+    )
+    db.add(conv)
+    db.commit()
+    db.refresh(conv)
+    return conv
+
+
+def _get_or_create_conversation_by_recipient_identifier(
+    db: Session,
+    me: str,
+    recipient_identifier: str,
+) -> Optional[SocialConversation]:
+    raw = (recipient_identifier or "").strip()
+    if not raw:
+        return None
+
+    recipient = _resolve_user_by_identifier(db, raw)
+    peer_id = (recipient.email or "").strip().lower() if recipient else raw
+    if not peer_id or peer_id == me:
+        return None
+
+    existing = (
+        db.query(SocialConversation)
+        .filter(
+            or_(
+                (SocialConversation.owner_id == me) & (SocialConversation.other_user_id == peer_id),
+                (SocialConversation.owner_id == peer_id) & (SocialConversation.other_user_id == me),
+            )
+        )
+        .first()
+    )
+    if existing:
+        return existing
+
+    conv = SocialConversation(
+        owner_id=me,
+        other_user_id=peer_id,
+        other_user_name=_display(recipient) if recipient else raw,
+        last_message=None,
+        updated_at=_now_ms(),
+        unread_count=0,
+    )
+    db.add(conv)
+    db.commit()
+    db.refresh(conv)
+    return conv
 
 
 def _conversation_partner_ids(db: Session, me: str) -> List[str]:
@@ -487,7 +621,9 @@ def _conversation_partner_ids(db: Session, me: str) -> List[str]:
         .all()
     )
     for conv in conversations:
-        partners.add(_conversation_peer(conv, me))
+        partner_id = _canonical_user_id(db, _conversation_peer(conv, me))
+        if partner_id:
+            partners.add(partner_id)
     partners.discard(me)
     return sorted(partners)
 
@@ -571,9 +707,13 @@ def _mark_messages_seen(db: Session, conv: SocialConversation, me: str) -> List[
 
 
 def _conversation_out(db: Session, conv: SocialConversation, me: str) -> dict:
-    other_user_id = _conversation_peer(conv, me)
+    raw_other_user_id = _conversation_peer(conv, me)
+    other_user_id = _canonical_user_id(db, raw_other_user_id)
     other_profile = db.query(SocialProfile).filter(SocialProfile.user_id == other_user_id).first()
     other_user = db.query(User).filter(User.email == other_user_id).first()
+    other_user_online = social_connection_manager.is_online(other_user_id)
+    if other_user is not None:
+        other_user_online = other_user_online or bool(other_user.is_online)
     if other_profile and other_profile.display_name:
         other_name = other_profile.display_name
     elif conv.owner_id == me and conv.other_user_name:
@@ -588,7 +728,7 @@ def _conversation_out(db: Session, conv: SocialConversation, me: str) -> dict:
         "last_message": conv.last_message,
         "updated_at": conv.updated_at,
         "unread_count": _compute_unread_count(db, conv.id, me),
-        "other_user_online": bool(other_user.is_online) if other_user else False,
+        "other_user_online": other_user_online,
         "other_user_last_seen": _last_seen_iso(other_user.last_seen) if other_user else None,
     }
 
@@ -1133,12 +1273,24 @@ def create_conversation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    me = current_user.email
+    me = current_user.email.strip().lower()
+    requested_other_user_id = (body.other_user_id or "").strip()
+    if not requested_other_user_id:
+        raise HTTPException(status_code=400, detail="other_user_id is required")
+
+    other_user = _resolve_user_by_identifier(db, body.other_user_id)
+    other_user_id = other_user.email.strip().lower() if other_user else requested_other_user_id
+    if other_user_id == me:
+        raise HTTPException(status_code=400, detail="Cannot create conversation with yourself")
+
+    other_user_name = (body.other_user_name or "").strip()
+    if not other_user_name and other_user:
+        other_user_name = _display(other_user)
 
     # Already exists from my side?
     existing = db.query(SocialConversation).filter(
         SocialConversation.owner_id == me,
-        SocialConversation.other_user_id == body.other_user_id,
+        SocialConversation.other_user_id == other_user_id,
     ).first()
     if existing:
         return {
@@ -1152,7 +1304,7 @@ def create_conversation(
 
     # Already exists from their side?
     reverse = db.query(SocialConversation).filter(
-        SocialConversation.owner_id == body.other_user_id,
+        SocialConversation.owner_id == other_user_id,
         SocialConversation.other_user_id == me,
     ).first()
     if reverse:
@@ -1167,8 +1319,8 @@ def create_conversation(
 
     conv = SocialConversation(
         owner_id=me,
-        other_user_id=body.other_user_id,
-        other_user_name=body.other_user_name,
+        other_user_id=other_user_id,
+        other_user_name=other_user_name,
         last_message=None,
         updated_at=_now_ms(),
         unread_count=0,
@@ -1189,48 +1341,63 @@ def create_conversation(
 # ─── Messages ─────────────────────────────────────────────────────────────────
 
 @router.get("/conversations/{conv_id}/messages", response_model=List[MessageOut])
+@router.get("/conversations/{conv_id}/message", response_model=List[MessageOut], include_in_schema=False)
+@router.get("/conversation/{conv_id}/messages", response_model=List[MessageOut], include_in_schema=False)
 async def get_messages(
     conv_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    me = current_user.email.strip().lower()
     conv = db.query(SocialConversation).filter(SocialConversation.id == conv_id).first()
     if not conv:
+        conv = _get_or_create_conversation_by_target_user_id(db, me, conv_id)
+    if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    _assert_participant(conv, current_user.email)
+    _assert_participant(conv, me)
 
     messages = (
         db.query(SocialMessage)
-        .filter(SocialMessage.conversation_id == conv_id)
+        .filter(SocialMessage.conversation_id == conv.id)
         .order_by(SocialMessage.created_at)
         .limit(200)
         .all()
     )
-    me = current_user.email
     visible = [m for m in messages if me not in (m.deleted_by or "").split(",")]
-    delivered_messages = _mark_messages_delivered(db, me, conversation_id=conv_id)
+    delivered_messages = _mark_messages_delivered(db, me, conversation_id=conv.id)
     if delivered_messages:
         await _emit_delivery_events(me, delivered_messages)
     return [_message_out(m) for m in visible]
 
 
 @router.post("/conversations/{conv_id}/messages", response_model=MessageOut, status_code=201)
+@router.post("/conversations/{conv_id}/message", response_model=MessageOut, status_code=201, include_in_schema=False)
+@router.post("/conversation/{conv_id}/messages", response_model=MessageOut, status_code=201, include_in_schema=False)
 async def send_message(
     conv_id: int,
     body: MessageCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    me = current_user.email.strip().lower()
     conv = db.query(SocialConversation).filter(SocialConversation.id == conv_id).first()
     if not conv:
+        if body.recipient_id:
+            conv = _get_or_create_conversation_by_recipient_identifier(db, me, body.recipient_id)
+        if not conv:
+            conv = _get_or_create_conversation_by_target_user_id(db, me, conv_id)
+        if not conv:
+            conv = _get_or_create_conversation_by_recipient_identifier(db, me, str(conv_id))
+    if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    _assert_participant(conv, current_user.email)
+    _assert_participant(conv, me)
 
-    me = current_user.email
-    recipient_email = _conversation_peer(conv, me)
+    recipient_identifier = _conversation_peer(conv, me)
+    recipient_user = _resolve_user_by_identifier(db, recipient_identifier)
+    recipient_email = recipient_user.email.strip().lower() if recipient_user else recipient_identifier.strip().lower()
     created_at = _now_ms()
     msg = SocialMessage(
-        conversation_id=conv_id,
+        conversation_id=conv.id,
         sender_id=me,
         sender_name=_display(current_user),
         content=body.content,
@@ -1252,7 +1419,7 @@ async def send_message(
         recipient_email,
         {
             "type": "message",
-            "conversation_id": conv_id,
+            "conversation_id": conv.id,
             "message": message_payload,
         },
     )
@@ -1268,7 +1435,7 @@ async def send_message(
             {
                 "type": "delivered",
                 "user_id": recipient_email,
-                "conversation_id": conv_id,
+                "conversation_id": conv.id,
                 "message_ids": [int(msg.id)],
             },
         )
@@ -1279,7 +1446,7 @@ async def send_message(
             recipient_email=recipient_email,
             sender_id=me,
             sender_name=_display(current_user),
-            conversation_id=conv_id,
+            conversation_id=conv.id,
             message_id=msg.id,
             message_text=body.content,
         )
@@ -1287,6 +1454,25 @@ async def send_message(
         logger.exception("Failed to send FCM notification for social message %s", msg.id)
 
     return message_payload
+
+
+@router.post("/messages", response_model=MessageOut, status_code=201)
+async def send_message_legacy(
+    body: DirectMessageCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    me = current_user.email.strip().lower()
+    conv = _get_or_create_conversation_by_recipient_identifier(db, me, body.recipient_id)
+    if not conv:
+        raise HTTPException(status_code=400, detail="recipient_id is invalid")
+
+    return await send_message(
+        conv_id=int(conv.id),
+        body=MessageCreate(content=body.content),
+        db=db,
+        current_user=current_user,
+    )
 
 
 @router.post("/conversations/{conv_id}/seen", response_model=SeenUpdateOut)
@@ -1327,11 +1513,11 @@ def get_presence(
     current_user: User = Depends(get_current_user),
 ):
     del current_user
-    normalized = (target_user_id or "").strip()
+    normalized = _canonical_user_id(db, target_user_id)
     if not normalized:
         raise HTTPException(status_code=400, detail="target_user_id is required")
 
-    target_user = db.query(User).filter(User.email == normalized).first()
+    target_user = db.query(User).filter(func.lower(User.email) == normalized).first()
     return _presence_out(target_user, normalized)
 
 

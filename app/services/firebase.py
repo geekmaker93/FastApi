@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Optional
 
+from sqlalchemy import func
+
 from app.core.config import FIREBASE_CREDENTIALS_PATH
 from app.models.db_models import User, UserDeviceToken
 
@@ -125,8 +127,27 @@ def _cleanup_invalid_tokens(db, token_records, responses) -> None:
 
 
 def _get_recipient_tokens(db, recipient_email: str):
-    recipient = db.query(User).filter(User.email == recipient_email).first()
+    raw_identifier = (recipient_email or "").strip()
+    if not raw_identifier:
+        logger.warning("Skipping notification: empty recipient identifier")
+        return None, []
+
+    normalized_identifier = raw_identifier.lower()
+    recipient = db.query(User).filter(func.lower(User.email) == normalized_identifier).first()
+    if recipient is None and raw_identifier.isdigit():
+        recipient = db.query(User).filter(User.id == int(raw_identifier)).first()
     if recipient is None:
+        matches = (
+            db.query(User)
+            .filter(User.name.isnot(None), func.lower(User.name) == normalized_identifier)
+            .limit(2)
+            .all()
+        )
+        if len(matches) == 1:
+            recipient = matches[0]
+
+    if recipient is None:
+        logger.warning("Skipping notification: recipient not found for identifier '%s'", raw_identifier)
         return None, []
 
     token_records = (
@@ -142,8 +163,12 @@ def _send_multicast_notification(db, recipient_email: str, title: str, body: str
     if not initialize_firebase():
         return 0
 
-    _, token_records = _get_recipient_tokens(db, recipient_email)
+    recipient, token_records = _get_recipient_tokens(db, recipient_email)
     if not token_records:
+        logger.info(
+            "Skipping Firebase notification: no device tokens for recipient '%s'",
+            getattr(recipient, "email", recipient_email),
+        )
         return 0
 
     try:

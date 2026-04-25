@@ -165,7 +165,14 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // API Configuration
-        const API_BASE = 'http://127.0.0.1:8000';
+        const DEFAULT_RENDER_API = 'https://crop-backend.onrender.com';
+        const API_BASE = (() => {
+            const origin = globalThis.location?.origin;
+            if (origin && origin !== 'null' && !origin.startsWith('file:')) {
+                return origin.replace(/\/$/, '');
+            }
+            return DEFAULT_RENDER_API;
+        })();
         
         // Initialize map
         const map = L.map('map').setView([18.0180, -76.8099], 13);
