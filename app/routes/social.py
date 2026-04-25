@@ -19,7 +19,7 @@ _NOMINATIM_HEADERS = {
 }
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, WebSocket, WebSocketDisconnect, status
-from pydantic import BaseModel
+from pydantic import AliasChoices, BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -111,7 +111,10 @@ class ConversationOut(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    content: str
+    content: str = Field(
+        ...,
+        validation_alias=AliasChoices("content", "message", "text"),
+    )
 
 
 class MessageOut(BaseModel):
@@ -120,6 +123,8 @@ class MessageOut(BaseModel):
     sender_id: str
     sender_name: Optional[str] = None
     content: Optional[str] = None
+    message: Optional[str] = None
+    text: Optional[str] = None
     created_at: int
     is_delivered: bool = False
     delivered_at: Optional[int] = None
@@ -410,6 +415,8 @@ def _message_out(m: SocialMessage) -> dict:
         "sender_id": m.sender_id,
         "sender_name": m.sender_name,
         "content": m.content,
+        "message": m.content,
+        "text": m.content,
         "created_at": m.created_at,
         "is_delivered": bool(getattr(m, "is_delivered", False)),
         "delivered_at": getattr(m, "delivered_at", None),
