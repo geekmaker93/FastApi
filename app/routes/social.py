@@ -508,7 +508,7 @@ def _mark_messages_delivered(
     db: Session,
     me: str,
     conversation_id: Optional[int] = None,
-) -> List[SocialMessage]:
+) -> List[Tuple[str, int, int]]:
     query = (
         db.query(SocialMessage)
         .join(SocialConversation, SocialConversation.id == SocialMessage.conversation_id)
@@ -526,11 +526,17 @@ def _mark_messages_delivered(
         return []
 
     delivered_at = _now_ms()
+    # Snapshot scalar fields before commit so callers can safely use results
+    # after the SQLAlchemy session is closed.
+    delivery_events = [
+        (str(message.sender_id), int(message.conversation_id), int(message.id))
+        for message in messages
+    ]
     for message in messages:
         message.is_delivered = True
         message.delivered_at = delivered_at
     db.commit()
-    return messages
+    return delivery_events
 
 
 def _mark_messages_seen(db: Session, conv: SocialConversation, me: str) -> List[SocialMessage]:
@@ -634,10 +640,10 @@ async def _send_presence_snapshot(websocket: WebSocket, user_id: str) -> None:
         )
 
 
-async def _emit_delivery_events(recipient_id: str, messages: List[SocialMessage]) -> None:
+async def _emit_delivery_events(recipient_id: str, delivery_events: List[Tuple[str, int, int]]) -> None:
     grouped: Dict[Tuple[str, int], List[int]] = defaultdict(list)
-    for message in messages:
-        grouped[(message.sender_id, message.conversation_id)].append(int(message.id))
+    for sender_id, conversation_id, message_id in delivery_events:
+        grouped[(sender_id, conversation_id)].append(message_id)
 
     for (sender_id, conversation_id), message_ids in grouped.items():
         await social_connection_manager.send_to_user(
@@ -1366,20 +1372,23 @@ async def social_websocket(websocket: WebSocket, token: str = Query(...)):
                     )
             elif event == "seen":
                 conv_id = int(data.get("conversation_id") or 0)
+                peer_id: Optional[str] = None
+                message_ids: List[int] = []
                 db = SessionLocal()
                 try:
                     conv = db.query(SocialConversation).filter(SocialConversation.id == conv_id).first()
                     if conv is None:
                         continue
                     _assert_participant(conv, me)
+                    peer_id = _conversation_peer(conv, me)
                     seen_messages = _mark_messages_seen(db, conv, me)
                     message_ids = [int(message.id) for message in seen_messages]
                 finally:
                     db.close()
 
-                if message_ids:
+                if message_ids and peer_id:
                     await social_connection_manager.send_to_user(
-                        _conversation_peer(conv, me),
+                        peer_id,
                         {
                             "type": "seen",
                             "user_id": me,
