@@ -606,6 +606,24 @@ def _conversation_peer(conv: SocialConversation, me: str) -> str:
     return conv.other_user_id if conv.owner_id == me else conv.owner_id
 
 
+def _csv_set(raw: Optional[str]) -> set[str]:
+    return {value for value in (raw or "").split(",") if value}
+
+
+def _is_hidden_for(conv: SocialConversation, user_id: str) -> bool:
+    return user_id in _csv_set(conv.hidden_by)
+
+
+def _unhide_conversation_for(db: Session, conv: SocialConversation, user_id: str) -> bool:
+    hidden = _csv_set(conv.hidden_by)
+    if user_id not in hidden:
+        return False
+    hidden.discard(user_id)
+    conv.hidden_by = ",".join(sorted(hidden))
+    db.add(conv)
+    return True
+
+
 def _get_or_create_conversation_by_target_user_id(db: Session, me: str, target_user_id: int) -> Optional[SocialConversation]:
     target_user = db.query(User).filter(User.id == target_user_id).first()
     if target_user is None:
@@ -1401,7 +1419,7 @@ def get_conversations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    me = current_user.email
+    me = current_user.email.strip().lower()
     result = []
 
     for conv in (
@@ -1411,7 +1429,7 @@ def get_conversations(
         .limit(100)
         .all()
     ):
-        if me in (conv.hidden_by or "").split(","):
+        if _is_hidden_for(conv, me):
             continue
         result.append(_conversation_out(db, conv, me))
 
@@ -1445,6 +1463,9 @@ def create_conversation(
         SocialConversation.other_user_id == other_user_id,
     ).first()
     if existing:
+        if _unhide_conversation_for(db, existing, me):
+            db.commit()
+            db.refresh(existing)
         return {
             "id": existing.id,
             "other_user_id": existing.other_user_id,
@@ -1460,6 +1481,9 @@ def create_conversation(
         SocialConversation.other_user_id == me,
     ).first()
     if reverse:
+        if _unhide_conversation_for(db, reverse, me):
+            db.commit()
+            db.refresh(reverse)
         return {
             "id": reverse.id,
             "other_user_id": reverse.owner_id,
@@ -1508,6 +1532,10 @@ async def get_messages(
         raise HTTPException(status_code=404, detail="Conversation not found")
     _assert_participant(conv, me)
 
+    if _unhide_conversation_for(db, conv, me):
+        db.commit()
+        db.refresh(conv)
+
     messages = (
         db.query(SocialMessage)
         .filter(SocialMessage.conversation_id == conv.id)
@@ -1547,6 +1575,11 @@ async def send_message(
     recipient_identifier = _conversation_peer(conv, me)
     recipient_user = _resolve_user_by_identifier(db, recipient_identifier)
     recipient_email = recipient_user.email.strip().lower() if recipient_user else recipient_identifier.strip().lower()
+
+    # A new message should bring the thread back into both users' inbox lists.
+    _unhide_conversation_for(db, conv, me)
+    _unhide_conversation_for(db, conv, recipient_email)
+
     created_at = _now_ms()
     msg = SocialMessage(
         conversation_id=conv.id,
