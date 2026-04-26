@@ -18,16 +18,31 @@ _WELCOME_CONFIG_PATH = _UPLOADS_SOCIAL_DIR / "welcome_config.json"
 _WELCOME_POST_ID = -1  # synthetic ID, never stored in DB
 _WELCOME_USER_ID = "system@farmsense.app"
 _WELCOME_USER_NAME = "FarmSense"
+_WELCOME_DEFAULT_CONTENT = "Welcome! Connect with farmers, share your journey, and grow together."
+_WELCOME_DEFAULT_IMAGE_URL = "/uploads/social/welcome_greeting.png"
 
 
 def _load_welcome_config() -> Optional[dict]:
     """Return the welcome greeting config dict, or None if not set."""
+    fallback_config = {
+        "image_url": _WELCOME_DEFAULT_IMAGE_URL,
+        "content": _WELCOME_DEFAULT_CONTENT,
+        "media_type": "image",
+    }
     try:
         if _WELCOME_CONFIG_PATH.exists():
             with open(_WELCOME_CONFIG_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
+                loaded = json.load(f)
+                if isinstance(loaded, dict) and loaded.get("image_url"):
+                    loaded.setdefault("content", _WELCOME_DEFAULT_CONTENT)
+                    loaded.setdefault("media_type", "image")
+                    return loaded
     except Exception:
         pass
+
+    # If JSON config is missing/corrupt but the committed image exists, still show greeting.
+    if (_UPLOADS_SOCIAL_DIR / "welcome_greeting.png").exists():
+        return fallback_config
     return None
 
 
@@ -903,7 +918,7 @@ def get_posts(
     ranked = _rank_posts_by_location(posts, me, resolved_lat, resolved_lon, radius_km)
     paged = ranked[offset: offset + limit]
     result = [item["post"] for item in paged]
-    if offset == 0 and since_ms is None:
+    if offset == 0:
         welcome = _build_welcome_post()
         if welcome:
             result.insert(0, welcome)
@@ -961,7 +976,7 @@ def get_global_feed(
 
     posts = query.order_by(SocialPost.created_at.desc()).offset(offset).limit(limit).all()
     result = [_post_out(post, me) for post in posts]
-    if offset == 0 and since_ms is None:
+    if offset == 0:
         welcome = _build_welcome_post()
         if welcome:
             result.insert(0, welcome)
@@ -1142,9 +1157,6 @@ def upload_media(
 
 
 # ─── Welcome greeting ─────────────────────────────────────────────────────────
-
-_WELCOME_DEFAULT_CONTENT = "Welcome! Connect with farmers, share your journey, and grow together."
-
 
 @router.post("/admin/welcome-greeting", status_code=200)
 def set_welcome_greeting(
