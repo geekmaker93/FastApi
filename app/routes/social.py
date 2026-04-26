@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import time
@@ -6,8 +7,57 @@ import math
 import logging
 from collections import defaultdict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import requests
+
+# ─── Welcome greeting config ──────────────────────────────────────────────────
+
+_UPLOADS_SOCIAL_DIR = Path(__file__).parent.parent.parent / "uploads" / "social"
+_WELCOME_CONFIG_PATH = _UPLOADS_SOCIAL_DIR / "welcome_config.json"
+_WELCOME_POST_ID = -1  # synthetic ID, never stored in DB
+_WELCOME_USER_ID = "system@farmsense.app"
+_WELCOME_USER_NAME = "FarmSense"
+
+
+def _load_welcome_config() -> Optional[dict]:
+    """Return the welcome greeting config dict, or None if not set."""
+    try:
+        if _WELCOME_CONFIG_PATH.exists():
+            with open(_WELCOME_CONFIG_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return None
+
+
+def _save_welcome_config(image_url: str, content: str, media_type: str = "image") -> None:
+    _UPLOADS_SOCIAL_DIR.mkdir(parents=True, exist_ok=True)
+    with open(_WELCOME_CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump({"image_url": image_url, "content": content, "media_type": media_type}, f)
+
+
+def _build_welcome_post() -> dict:
+    """Build the synthetic pinned greeting post dict."""
+    cfg = _load_welcome_config()
+    if not cfg:
+        return {}
+    return {
+        "id": _WELCOME_POST_ID,
+        "user_id": _WELCOME_USER_ID,
+        "user_name": _WELCOME_USER_NAME,
+        "content": cfg.get("content", ""),
+        "image_url": cfg.get("image_url"),
+        "media_type": cfg.get("media_type", "image"),
+        "latitude": None,
+        "longitude": None,
+        "is_global": True,
+        "location_name": None,
+        "created_at": int(time.time() * 1000),
+        "like_count": 0,
+        "comment_count": 0,
+        "liked_by_me": False,
+    }
 
 POST_TTL_MS = 30 * 24 * 60 * 60 * 1000  # 30 days in milliseconds
 _REVERSE_GEOCODE_CACHE: dict[str, tuple[float, Optional[str]]] = {}
@@ -159,7 +209,9 @@ class NotificationOut(BaseModel):
     type: str
     actor_id: str
     actor_name: Optional[str] = None
-    post_id: int
+    post_id: Optional[int] = None
+    conversation_id: Optional[int] = None
+    message_id: Optional[int] = None
     post_preview: Optional[str] = None
     content_preview: Optional[str] = None
     created_at: int
@@ -490,16 +542,20 @@ def _notification_out(
     item_type: str,
     actor_id: str,
     actor_name: str,
-    post_id: int,
+    post_id: Optional[int],
     post_preview: Optional[str],
     content_preview: Optional[str],
     created_at: int,
+    conversation_id: Optional[int] = None,
+    message_id: Optional[int] = None,
 ) -> dict:
     return {
         "type": item_type,
         "actor_id": actor_id,
         "actor_name": actor_name,
         "post_id": post_id,
+        "conversation_id": conversation_id,
+        "message_id": message_id,
         "post_preview": _trim_preview(post_preview),
         "content_preview": _trim_preview(content_preview),
         "created_at": created_at,
@@ -846,7 +902,12 @@ def get_posts(
 
     ranked = _rank_posts_by_location(posts, me, resolved_lat, resolved_lon, radius_km)
     paged = ranked[offset: offset + limit]
-    return [item["post"] for item in paged]
+    result = [item["post"] for item in paged]
+    if offset == 0 and since_ms is None:
+        welcome = _build_welcome_post()
+        if welcome:
+            result.insert(0, welcome)
+    return result
 
 
 @router.get("/geo-feed", response_model=List[GeoFeedItemOut])
@@ -899,7 +960,12 @@ def get_global_feed(
         query = query.filter(SocialPost.created_at > since_ms)
 
     posts = query.order_by(SocialPost.created_at.desc()).offset(offset).limit(limit).all()
-    return [_post_out(post, me) for post in posts]
+    result = [_post_out(post, me) for post in posts]
+    if offset == 0 and since_ms is None:
+        welcome = _build_welcome_post()
+        if welcome:
+            result.insert(0, welcome)
+    return result
 
 
 @router.post("/posts", response_model=PostOut, status_code=201)
@@ -1075,7 +1141,55 @@ def upload_media(
     }
 
 
-# ─── Likes ────────────────────────────────────────────────────────────────────
+# ─── Welcome greeting ─────────────────────────────────────────────────────────
+
+_WELCOME_DEFAULT_CONTENT = "Welcome! Connect with farmers, share your journey, and grow together."
+
+
+@router.post("/admin/welcome-greeting", status_code=200)
+def set_welcome_greeting(
+    file: UploadFile = File(...),
+    content: str = _WELCOME_DEFAULT_CONTENT,
+    current_user: User = Depends(get_current_user),
+):
+    """Upload a greeting image that is pinned as the first post in every user's feed."""
+    ct = file.content_type or ""
+    if ct not in _ALLOWED_IMAGE:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type. Allowed: JPEG, PNG, GIF, WEBP",
+        )
+    _UPLOADS_SOCIAL_DIR.mkdir(parents=True, exist_ok=True)
+    filename = "welcome_greeting" + _media_ext(ct)
+    dest_path = _UPLOADS_SOCIAL_DIR / filename
+    with open(dest_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    image_url = f"/uploads/social/{filename}"
+    _save_welcome_config(image_url=image_url, content=content.strip() or _WELCOME_DEFAULT_CONTENT)
+    return {"message": "Welcome greeting updated", "image_url": image_url, "content": content}
+
+
+@router.delete("/admin/welcome-greeting", status_code=200)
+def remove_welcome_greeting(current_user: User = Depends(get_current_user)):
+    """Remove the pinned welcome greeting post from the feed."""
+    if _WELCOME_CONFIG_PATH.exists():
+        cfg = _load_welcome_config()
+        if cfg and cfg.get("image_url"):
+            filename = cfg["image_url"].split("/uploads/social/", 1)[-1]
+            img_path = _UPLOADS_SOCIAL_DIR / filename
+            if img_path.exists():
+                img_path.unlink(missing_ok=True)
+        _WELCOME_CONFIG_PATH.unlink(missing_ok=True)
+    return {"message": "Welcome greeting removed"}
+
+
+@router.get("/admin/welcome-greeting", status_code=200)
+def get_welcome_greeting(current_user: User = Depends(get_current_user)):
+    """Get the current welcome greeting configuration."""
+    cfg = _load_welcome_config()
+    if not cfg:
+        raise HTTPException(status_code=404, detail="No welcome greeting configured")
+    return cfg
 
 @router.post("/posts/{post_id}/like", response_model=LikeOut)
 def toggle_like(
@@ -1189,52 +1303,78 @@ def get_notifications(
         post_id
         for (post_id,) in db.query(SocialPost.id).filter(SocialPost.user_id == me).all()
     ]
-    if not my_post_ids:
-        return []
-
-    like_query = (
-        db.query(SocialLike, SocialPost)
-        .join(SocialPost, SocialLike.post_id == SocialPost.id)
-        .filter(SocialLike.post_id.in_(my_post_ids), SocialLike.user_id != me)
-        .order_by(SocialLike.created_at.desc())
-    )
-    if since_ms is not None:
-        like_query = like_query.filter(SocialLike.created_at > since_ms)
-
-    comment_query = (
-        db.query(SocialComment, SocialPost)
-        .join(SocialPost, SocialComment.post_id == SocialPost.id)
-        .filter(SocialComment.post_id.in_(my_post_ids), SocialComment.user_id != me)
-        .order_by(SocialComment.created_at.desc())
-    )
-    if since_ms is not None:
-        comment_query = comment_query.filter(SocialComment.created_at > since_ms)
-
     notifications: List[dict] = []
 
-    for like, post in like_query.limit(limit).all():
-        notifications.append(
-            _notification_out(
-                "like",
-                like.user_id,
-                _display_for_user_id(db, like.user_id),
-                post.id,
-                post.content,
-                "liked your post",
-                like.created_at,
-            )
+    if my_post_ids:
+        like_query = (
+            db.query(SocialLike, SocialPost)
+            .join(SocialPost, SocialLike.post_id == SocialPost.id)
+            .filter(SocialLike.post_id.in_(my_post_ids), SocialLike.user_id != me)
+            .order_by(SocialLike.created_at.desc())
         )
+        if since_ms is not None:
+            like_query = like_query.filter(SocialLike.created_at > since_ms)
 
-    for comment, post in comment_query.limit(limit).all():
+        comment_query = (
+            db.query(SocialComment, SocialPost)
+            .join(SocialPost, SocialComment.post_id == SocialPost.id)
+            .filter(SocialComment.post_id.in_(my_post_ids), SocialComment.user_id != me)
+            .order_by(SocialComment.created_at.desc())
+        )
+        if since_ms is not None:
+            comment_query = comment_query.filter(SocialComment.created_at > since_ms)
+
+        for like, post in like_query.limit(limit).all():
+            notifications.append(
+                _notification_out(
+                    "like",
+                    like.user_id,
+                    _display_for_user_id(db, like.user_id),
+                    post.id,
+                    post.content,
+                    "liked your post",
+                    like.created_at,
+                )
+            )
+
+        for comment, post in comment_query.limit(limit).all():
+            notifications.append(
+                _notification_out(
+                    "comment",
+                    comment.user_id,
+                    comment.user_name or _display_for_user_id(db, comment.user_id),
+                    post.id,
+                    post.content,
+                    comment.content,
+                    comment.created_at,
+                )
+            )
+
+    message_query = (
+        db.query(SocialMessage, SocialConversation)
+        .join(SocialConversation, SocialConversation.id == SocialMessage.conversation_id)
+        .filter(
+            or_(SocialConversation.owner_id == me, SocialConversation.other_user_id == me),
+            SocialMessage.sender_id != me,
+            SocialMessage.is_read.is_(False),
+        )
+        .order_by(SocialMessage.created_at.desc())
+    )
+    if since_ms is not None:
+        message_query = message_query.filter(SocialMessage.created_at > since_ms)
+
+    for message, conversation in message_query.limit(limit).all():
         notifications.append(
             _notification_out(
-                "comment",
-                comment.user_id,
-                comment.user_name or _display_for_user_id(db, comment.user_id),
-                post.id,
-                post.content,
-                comment.content,
-                comment.created_at,
+                "message",
+                message.sender_id,
+                message.sender_name or _display_for_user_id(db, message.sender_id),
+                None,
+                None,
+                message.content,
+                message.created_at,
+                conversation_id=int(conversation.id),
+                message_id=int(message.id),
             )
         )
 

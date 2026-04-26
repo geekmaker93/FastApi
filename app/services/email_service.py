@@ -114,4 +114,3 @@ def send_password_reset_email(recipient_email: str, code: str) -> None:
         server.starttls()
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
-        server.send_message(msg)
