@@ -1592,6 +1592,23 @@ async def send_message(
             },
         )
 
+    sender_conv_payload = _conversation_out(db, conv, me)
+    recipient_conv_payload = _conversation_out(db, conv, recipient_email)
+    await social_connection_manager.send_to_user(
+        me,
+        {
+            "type": "conversation_updated",
+            "conversation": sender_conv_payload,
+        },
+    )
+    await social_connection_manager.send_to_user(
+        recipient_email,
+        {
+            "type": "conversation_updated",
+            "conversation": recipient_conv_payload,
+        },
+    )
+
     try:
         send_message_notification(
             db=db,
@@ -1681,7 +1698,7 @@ async def social_websocket(websocket: WebSocket, token: str = Query(...)):
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
 
-    me = current_user.email
+    me = (current_user.email or "").strip().lower()
     await social_connection_manager.connect(me, websocket)
 
     db = SessionLocal()
@@ -1741,6 +1758,38 @@ async def social_websocket(websocket: WebSocket, token: str = Query(...)):
                             "message_ids": message_ids,
                         },
                     )
+            elif event == "message":
+                content = str(
+                    data.get("content")
+                    or data.get("message")
+                    or data.get("text")
+                    or ""
+                ).strip()
+                if not content:
+                    continue
+
+                conv_id_raw = data.get("conversation_id")
+                recipient_id_raw = str(
+                    data.get("recipient_id")
+                    or data.get("receiver_id")
+                    or data.get("other_user_id")
+                    or data.get("to")
+                    or ""
+                ).strip()
+                conv_id = int(conv_id_raw) if str(conv_id_raw or "").strip().isdigit() else 0
+
+                db = SessionLocal()
+                try:
+                    await send_message(
+                        conv_id=conv_id,
+                        body=MessageCreate(content=content, recipient_id=recipient_id_raw or None),
+                        db=db,
+                        current_user=current_user,
+                    )
+                except Exception:
+                    logger.exception("Failed to persist websocket message for %s", me)
+                finally:
+                    db.close()
             elif event == "online":
                 db = SessionLocal()
                 try:
