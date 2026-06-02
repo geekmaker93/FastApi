@@ -2639,8 +2639,7 @@ def _build_rag_context(db: Session, question: str, farm_id: Optional[int]) -> Di
         }
 
 
-@router.post("/chat", responses={502: {"description": "Cloud AI provider error"}, 503: {"description": "Cloud AI not configured"}})
-def cloud_ai_chat(
+def _cloud_ai_chat_impl(
     body: CloudAIChatRequest,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
@@ -2949,3 +2948,33 @@ def cloud_ai_chat(
         professional_analysis=professional_analysis,
         image_analysis=image_analysis,
     )
+
+
+@router.post("/chat", responses={502: {"description": "Cloud AI provider error"}, 503: {"description": "Cloud AI not configured"}})
+def cloud_ai_chat(
+    body: CloudAIChatRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Dict[str, Any]:
+    try:
+        return _cloud_ai_chat_impl(body=body, current_user=current_user, db=db)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        # Absolute fallback to avoid runtime crashes from unexpected payload/edge-case paths.
+        answer = _build_local_crop_response(realtime_context={})
+        return _build_response_payload(
+            answer=answer,
+            provider="local-failsafe",
+            model="runtime-guard",
+            action_results={},
+            realtime_context={},
+            rag_context={},
+            professional_analysis={
+                "intent": "fallback",
+                "confidence": "low",
+                "risk_profile": {},
+                "constraints": {},
+            },
+            warning=f"AI runtime fallback activated: {str(exc)[:180]}",
+        )
