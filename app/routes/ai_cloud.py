@@ -2,12 +2,13 @@ import os
 import random
 import re
 import threading
+import json
 from datetime import datetime, timezone
 from typing import Annotated, Any, Dict, List, Optional
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
@@ -111,16 +112,93 @@ Rules:
 
 
 _VALID_ATTACHMENT_TYPES = {"ndvi", "plant", "soil", "text"}
+_SUPPORTED_IMAGE_MIME_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic", "image/heif"}
+MAX_IMAGE_BASE64_CHARS = int(os.getenv("AI_MAX_IMAGE_BASE64_CHARS", "12000000"))
 
 
 class CloudAIChatRequest(BaseModel):
-    question: str = Field(..., min_length=2, max_length=3000)
+    question: str = Field(default="", max_length=3000)
     farm_id: Optional[int] = None
     context: Optional[Dict[str, Any]] = None
     image_base64: Optional[str] = None
     image_mime_type: Optional[str] = None
     # Attachment type: ndvi | plant | soil | text
     attachment_type: Optional[str] = None
+
+    @field_validator("question", mode="before")
+    @classmethod
+    def _normalize_question(cls, value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value).strip()
+
+    @field_validator("context", mode="before")
+    @classmethod
+    def _normalize_context(cls, value: Any) -> Dict[str, Any]:
+        if value is None:
+            return {}
+        if isinstance(value, dict):
+            return value
+        if isinstance(value, str):
+            text = value.strip()
+            if not text:
+                return {}
+            try:
+                parsed = json.loads(text)
+                return parsed if isinstance(parsed, dict) else {}
+            except Exception:
+                return {}
+        return {}
+
+    @field_validator("image_base64", mode="before")
+    @classmethod
+    def _normalize_image_base64(cls, value: Any) -> Optional[str]:
+        if value is None:
+            return None
+        text = str(value).strip()
+        if not text:
+            return None
+        if text.startswith("data:") and "," in text:
+            _, data = text.split(",", 1)
+            text = data.strip()
+        return text or None
+
+    @field_validator("image_mime_type", mode="before")
+    @classmethod
+    def _normalize_image_mime_type(cls, value: Any) -> Optional[str]:
+        if value is None:
+            return None
+        text = str(value).strip().lower()
+        if not text:
+            return None
+        if text.startswith("data:") and ";" in text:
+            text = text[5:text.index(";")].strip().lower()
+        return text
+
+    @field_validator("attachment_type", mode="before")
+    @classmethod
+    def _normalize_attachment_type(cls, value: Any) -> Optional[str]:
+        if value is None:
+            return None
+        text = str(value).strip().lower()
+        return text or None
+
+    @model_validator(mode="after")
+    def _validate_combination(self) -> "CloudAIChatRequest":
+        if self.attachment_type and self.attachment_type not in _VALID_ATTACHMENT_TYPES:
+            self.attachment_type = "text"
+
+        if self.image_mime_type and self.image_mime_type not in _SUPPORTED_IMAGE_MIME_TYPES:
+            # Keep processing with a widely supported default if client sends an unusual type.
+            self.image_mime_type = "image/jpeg"
+
+        if self.image_base64 and len(self.image_base64) > MAX_IMAGE_BASE64_CHARS:
+            raise ValueError("Image is too large. Please upload a smaller image.")
+
+        if not self.question and not self.image_base64:
+            raise ValueError("Please provide a question or attach an image.")
+
+        return self
 
 
 @router.get("/status")
@@ -2569,6 +2647,8 @@ def cloud_ai_chat(
 ) -> Dict[str, Any]:
     # 1) User message -> detect intent
     question = (body.question or "").strip()
+    if not question and body.image_base64:
+        question = "Please analyze this image and give practical farm recommendations."
     # Prepend type-specific image context so the model knows what to analyze
     if body.image_base64:
         question = (
@@ -2801,7 +2881,32 @@ def cloud_ai_chat(
             warning=f"Cloud AI error: {response.text[:300]}",
         )
 
-    data = response.json()
+    try:
+        data = response.json()
+    except ValueError:
+        fallback_answer = _build_local_crop_response(realtime_context=realtime_context)
+        answer = _finalize_conversation(
+            conversation_key=conversation_key,
+            question=question,
+            answer=fallback_answer,
+            crop_query=str((app_context or {}).get("crop_type") or "").strip() or None,
+            intent=str((professional_analysis or {}).get("intent") or ""),
+            excluded_categories=excluded_categories,
+            plant_focus_query=plant_focus_query,
+            last_recommended_crop=last_recommended_crop,
+            stored_user_message=stored_user_message,
+        )
+        return _build_response_payload(
+            answer=answer,
+            provider="gemini",
+            model=GEMINI_MODEL,
+            action_results=action_results,
+            realtime_context=realtime_context,
+            rag_context=rag_context,
+            professional_analysis=professional_analysis,
+            warning="Cloud AI returned an invalid response format; using local fallback",
+        )
+
     candidates = data.get("candidates") or []
     parts = (((candidates[0] if candidates else {}).get("content") or {}).get("parts") or [])
     answer = "\n".join([p.get("text", "") for p in parts if p.get("text")]).strip()
