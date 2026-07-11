@@ -33,6 +33,7 @@ class FirebaseNotificationPayloadTests(unittest.TestCase):
         self.assertEqual(message.kwargs["notification"]["body"], "Hello")
         self.assertEqual(message.kwargs["data"]["type"], "social_message")
         self.assertEqual(message.kwargs["android"]["priority"], "high")
+        self.assertNotIn("channel_id", message.kwargs["android"]["notification"])
 
 
 if __name__ == "__main__":

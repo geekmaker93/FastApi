@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
@@ -13,6 +13,7 @@ from app.models.db_models import User, UserDeviceToken
 logger = logging.getLogger("crop_backend.firebase")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON", "").strip()
+FIREBASE_ANDROID_CHANNEL_ID = os.getenv("FIREBASE_ANDROID_CHANNEL_ID", "").strip()
 
 _DEFAULT_CREDENTIAL_FILES = (
     PROJECT_ROOT / "serviceAccountKey.json",
@@ -164,17 +165,22 @@ def _build_multicast_message(messaging, tokens: list[str], title: str, body: str
         "title": title,
         "body": body,
     }
+    android_notification_payload = {
+        "title": title,
+        "body": body,
+        "sound": "default",
+        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    }
+    # Only force a specific channel when explicitly configured.
+    # If the app has not created that channel, Android may suppress display.
+    if FIREBASE_ANDROID_CHANNEL_ID:
+        android_notification_payload["channel_id"] = FIREBASE_ANDROID_CHANNEL_ID
+
     android_payload = {
         "priority": "high",
-        "ttl": 120,
+        "ttl": timedelta(seconds=120),
         "collapse_key": "social_message",
-        "notification": {
-            "title": title,
-            "body": body,
-            "sound": "default",
-            "channel_id": "farm_sense_messages",
-            "click_action": "FLUTTER_NOTIFICATION_CLICK",
-        },
+        "notification": messaging.AndroidNotification(**android_notification_payload),
     }
     data_payload = dict(data)
     data_payload["title"] = title
@@ -206,13 +212,17 @@ def _send_multicast_notification(db, recipient_email: str, title: str, body: str
         logger.warning("Firebase messaging unavailable: firebase_admin is not installed")
         return 0
 
-    message = _build_multicast_message(
-        messaging,
-        tokens=[record.token for record in token_records],
-        title=title,
-        body=body,
-        data=data,
-    )
+    try:
+        message = _build_multicast_message(
+            messaging,
+            tokens=[record.token for record in token_records],
+            title=title,
+            body=body,
+            data=data,
+        )
+    except Exception:
+        logger.exception("Failed to build Firebase notification payload for %s", recipient_email)
+        return 0
 
     try:
         response = messaging.send_each_for_multicast(message)
