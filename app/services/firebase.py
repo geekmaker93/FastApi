@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import base64
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
@@ -13,6 +14,7 @@ from app.models.db_models import User, UserDeviceToken
 logger = logging.getLogger("crop_backend.firebase")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON", "").strip()
+FIREBASE_CREDENTIALS_B64 = os.getenv("FIREBASE_CREDENTIALS_B64", "").strip()
 FIREBASE_ANDROID_CHANNEL_ID = os.getenv("FIREBASE_ANDROID_CHANNEL_ID", "").strip()
 
 _DEFAULT_CREDENTIAL_FILES = (
@@ -41,6 +43,18 @@ def _normalize_credentials_json(raw_value: str) -> str:
 
 
 def _resolve_credentials_source() -> tuple[Optional[dict[str, Any]], Optional[Path]]:
+    if FIREBASE_CREDENTIALS_B64:
+        try:
+            decoded = base64.b64decode(FIREBASE_CREDENTIALS_B64).decode("utf-8")
+            payload = json.loads(decoded)
+        except Exception:
+            logger.exception("Firebase initialization skipped: FIREBASE_CREDENTIALS_B64 is not valid base64 JSON")
+            return None, None
+        if not isinstance(payload, dict):
+            logger.warning("Firebase initialization skipped: FIREBASE_CREDENTIALS_B64 must decode to a JSON object")
+            return None, None
+        return payload, None
+
     if FIREBASE_CREDENTIALS_JSON:
         normalized_json = _normalize_credentials_json(FIREBASE_CREDENTIALS_JSON)
         if not normalized_json:
