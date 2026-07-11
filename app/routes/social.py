@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import time
 import uuid
@@ -323,6 +324,11 @@ def _resolve_user_by_identifier(db: Session, identifier: str) -> Optional[User]:
         if user:
             return user
 
+    if "@" not in raw:
+        user = db.query(User).filter(func.lower(User.email).like(f"{lowered}@%")) .first()
+        if user:
+            return user
+
     # Allow a legacy fallback where older clients may pass a display name.
     # Use only a unique match to avoid misrouting messages.
     matches = (
@@ -335,6 +341,33 @@ def _resolve_user_by_identifier(db: Session, identifier: str) -> Optional[User]:
         return matches[0]
 
     return None
+
+
+def _extract_mentioned_user_ids(content: Optional[str], db: Optional[Session] = None) -> List[str]:
+    if not content:
+        return []
+
+    mentioned: List[str] = []
+    seen = set()
+    for match in re.finditer(r"(?<![\w@.])@([a-zA-Z0-9._-]+)", content):
+        identifier = match.group(1).strip().lower()
+        if not identifier or identifier in seen:
+            continue
+        if db is not None and _resolve_user_by_identifier(db, identifier) is None:
+            continue
+        seen.add(identifier)
+        mentioned.append(identifier)
+    return mentioned
+
+
+def _mentions_user(content: Optional[str], user_id: str) -> bool:
+    if not content:
+        return False
+
+    normalized_user = (user_id or "").strip().lower()
+    local_part = normalized_user.split("@", 1)[0] if "@" in normalized_user else normalized_user
+    mentioned_ids = _extract_mentioned_user_ids(content)
+    return normalized_user in mentioned_ids or local_part in mentioned_ids
 
 
 def _canonical_user_id(db: Optional[Session], identifier: str) -> str:
@@ -1029,6 +1062,33 @@ async def create_post(
     db.add(post)
     db.commit()
     db.refresh(post)
+
+    mentioned_ids = _extract_mentioned_user_ids(body.content, db=db)
+    for mention in mentioned_ids:
+        if not mention:
+            continue
+        if mention == me.strip().lower():
+            continue
+        recipient_user = _resolve_user_by_identifier(db, mention)
+        if not recipient_user:
+            continue
+        recipient_email = recipient_user.email.strip().lower()
+        if recipient_email == me.strip().lower():
+            continue
+        try:
+            send_social_activity_notification(
+                db=db,
+                recipient_email=recipient_email,
+                sender_id=me,
+                sender_name=_display(current_user),
+                activity_type="mention",
+                post_id=post.id,
+                post_preview=post.content,
+                activity_preview="mentioned you in a post",
+            )
+        except Exception:
+            logger.exception("Failed to send mention notification for post %s", post.id)
+
     post_payload = _post_out(post, me)
     await _emit_feed_event(
         "post_created",
@@ -1380,31 +1440,26 @@ def get_notifications(
                 )
             )
 
-    message_query = (
-        db.query(SocialMessage, SocialConversation)
-        .join(SocialConversation, SocialConversation.id == SocialMessage.conversation_id)
-        .filter(
-            or_(SocialConversation.owner_id == me, SocialConversation.other_user_id == me),
-            SocialMessage.sender_id != me,
-            SocialMessage.is_read.is_(False),
-        )
-        .order_by(SocialMessage.created_at.desc())
+    mention_query = (
+        db.query(SocialPost)
+        .filter(SocialPost.user_id != me)
+        .order_by(SocialPost.created_at.desc())
     )
     if since_ms is not None:
-        message_query = message_query.filter(SocialMessage.created_at > since_ms)
+        mention_query = mention_query.filter(SocialPost.created_at > since_ms)
 
-    for message, conversation in message_query.limit(limit).all():
+    for post in mention_query.limit(limit).all():
+        if not _mentions_user(post.content, me):
+            continue
         notifications.append(
             _notification_out(
-                "message",
-                message.sender_id,
-                message.sender_name or _display_for_user_id(db, message.sender_id),
-                None,
-                None,
-                message.content,
-                message.created_at,
-                conversation_id=int(conversation.id),
-                message_id=int(message.id),
+                "mention",
+                post.user_id,
+                post.user_name or _display_for_user_id(db, post.user_id),
+                post.id,
+                post.content,
+                "mentioned you in a post",
+                post.created_at,
             )
         )
 

@@ -159,6 +159,35 @@ def _get_recipient_tokens(db, recipient_email: str):
     return recipient, token_records
 
 
+def _build_multicast_message(messaging, tokens: list[str], title: str, body: str, data: dict[str, str]):
+    notification_payload = {
+        "title": title,
+        "body": body,
+    }
+    android_payload = {
+        "priority": "high",
+        "ttl": 120,
+        "collapse_key": "social_message",
+        "notification": {
+            "title": title,
+            "body": body,
+            "sound": "default",
+            "channel_id": "farm_sense_messages",
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+        },
+    }
+    data_payload = dict(data)
+    data_payload["title"] = title
+    data_payload["body"] = body
+
+    return messaging.MulticastMessage(
+        tokens=tokens,
+        notification=messaging.Notification(**notification_payload),
+        data=data_payload,
+        android=messaging.AndroidConfig(**android_payload),
+    )
+
+
 def _send_multicast_notification(db, recipient_email: str, title: str, body: str, data: dict[str, str]) -> int:
     if not initialize_firebase():
         return 0
@@ -177,17 +206,12 @@ def _send_multicast_notification(db, recipient_email: str, title: str, body: str
         logger.warning("Firebase messaging unavailable: firebase_admin is not installed")
         return 0
 
-    payload = dict(data)
-    payload["title"] = title
-    payload["body"] = body
-
-    message = messaging.MulticastMessage(
+    message = _build_multicast_message(
+        messaging,
         tokens=[record.token for record in token_records],
-        data=payload,
-        android=messaging.AndroidConfig(
-            priority="high",
-            ttl=120,
-        ),
+        title=title,
+        body=body,
+        data=data,
     )
 
     try:
@@ -234,6 +258,9 @@ def send_social_activity_notification(
         body = f"{sender_label} commented on your post"
         if snippet:
             body = f"{body}: {snippet}"
+    elif activity_type == "mention":
+        title = "New Mention"
+        body = f"{sender_label} mentioned you in a post"
     else:
         title = "New Activity"
         body = activity_preview or f"{sender_label} interacted with your post"
