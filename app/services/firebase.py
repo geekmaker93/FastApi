@@ -323,3 +323,44 @@ def send_message_notification(
         body=preview or "You have a new message",
         data=data,
     )
+
+
+def get_device_token_status(db, recipient_email: str) -> dict[str, Any]:
+    recipient, token_records = _get_recipient_tokens(db, recipient_email)
+    if recipient is None:
+        return {
+            "recipient_email": recipient_email,
+            "recipient_found": False,
+            "token_count": 0,
+            "tokens": [],
+        }
+
+    tokens = []
+    for record in token_records:
+        token_value = (record.token or "").strip()
+        masked = token_value[:12] + "..." if len(token_value) > 12 else token_value
+        tokens.append(
+            {
+                "id": int(record.id),
+                "platform": record.platform,
+                "updated_at": record.updated_at.isoformat() if record.updated_at else None,
+                "token_prefix": masked,
+            }
+        )
+
+    return {
+        "recipient_email": recipient.email,
+        "recipient_found": True,
+        "token_count": len(token_records),
+        "tokens": tokens,
+    }
+
+
+def send_test_notification(db, recipient_email: str) -> int:
+    return _send_multicast_notification(
+        db=db,
+        recipient_email=recipient_email,
+        title="FarmSense test notification",
+        body="Push delivery test from backend",
+        data={"type": "debug_push"},
+    )
