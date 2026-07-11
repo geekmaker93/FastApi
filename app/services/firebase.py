@@ -364,3 +364,79 @@ def send_test_notification(db, recipient_email: str) -> int:
         body="Push delivery test from backend",
         data={"type": "debug_push"},
     )
+
+
+def send_test_notification_detailed(db, recipient_email: str) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "recipient_email": recipient_email,
+        "firebase_initialized": False,
+        "recipient_found": False,
+        "token_count": 0,
+        "success_count": 0,
+        "failure_count": 0,
+        "results": [],
+    }
+
+    if not initialize_firebase():
+        result["error"] = "firebase_not_initialized"
+        return result
+
+    result["firebase_initialized"] = True
+    recipient, token_records = _get_recipient_tokens(db, recipient_email)
+    if recipient is not None:
+        result["recipient_email"] = recipient.email
+        result["recipient_found"] = True
+
+    if not token_records:
+        result["error"] = "no_device_tokens"
+        return result
+
+    result["token_count"] = len(token_records)
+
+    try:
+        from firebase_admin import messaging
+    except ImportError:
+        result["error"] = "firebase_admin_not_installed"
+        return result
+
+    try:
+        message = _build_multicast_message(
+            messaging,
+            tokens=[record.token for record in token_records],
+            title="FarmSense test notification",
+            body="Push delivery test from backend",
+            data={"type": "debug_push"},
+        )
+    except Exception as exc:
+        result["error"] = "build_payload_failed"
+        result["error_detail"] = str(exc)
+        return result
+
+    try:
+        response = messaging.send_each_for_multicast(message)
+    except Exception as exc:
+        result["error"] = "send_failed"
+        result["error_detail"] = str(exc)
+        return result
+
+    result["success_count"] = int(response.success_count)
+    result["failure_count"] = int(len(token_records) - response.success_count)
+
+    per_token_results: list[dict[str, Any]] = []
+    for token_record, token_response in zip(token_records, response.responses):
+        token_value = (token_record.token or "").strip()
+        token_prefix = token_value[:12] + "..." if len(token_value) > 12 else token_value
+        entry: dict[str, Any] = {
+            "token_id": int(token_record.id),
+            "token_prefix": token_prefix,
+            "success": bool(token_response.success),
+        }
+        if not token_response.success:
+            exc = token_response.exception
+            entry["error"] = str(exc)
+            entry["error_code"] = getattr(exc, "code", None)
+        per_token_results.append(entry)
+
+    result["results"] = per_token_results
+    _cleanup_invalid_tokens(db, token_records, response.responses)
+    return result

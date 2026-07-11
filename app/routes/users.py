@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_current_user, get_db
 from app.models.db_models import User
-from app.services.firebase import get_device_token_status, register_device_token, send_test_notification
+from app.services.firebase import (
+    get_device_token_status,
+    register_device_token,
+    send_test_notification,
+    send_test_notification_detailed,
+)
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -20,6 +25,16 @@ class PushTestOut(BaseModel):
     recipient_found: bool
     token_count: int
     success_count: int
+
+
+class PushTestDetailedOut(BaseModel):
+    recipient_email: str
+    firebase_initialized: bool
+    recipient_found: bool
+    token_count: int
+    success_count: int
+    failure_count: int
+    results: list[dict]
 
 
 @router.post("/device-token", responses={400: {"description": "Invalid device token"}})
@@ -58,3 +73,11 @@ def push_test(
         "token_count": int(status.get("token_count", 0)),
         "success_count": int(success_count),
     }
+
+
+@router.post("/push-test/detailed", response_model=PushTestDetailedOut)
+def push_test_detailed(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return send_test_notification_detailed(db, current_user.email)
