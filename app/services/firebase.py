@@ -151,7 +151,11 @@ def _cleanup_invalid_tokens(db, token_records, responses) -> None:
         if error_code in {"registration-token-not-registered", "unregistered"}:
             stale_ids.append(token_record.id)
             continue
-        if "registration token is not a valid" in error_text or "requested entity was not found" in error_text:
+        if (
+            "registration token is not a valid" in error_text
+            or "requested entity was not found" in error_text
+            or "senderid mismatch" in error_text
+        ):
             stale_ids.append(token_record.id)
 
     if stale_ids:
