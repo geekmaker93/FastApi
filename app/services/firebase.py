@@ -26,10 +26,28 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
+def _normalize_credentials_json(raw_value: str) -> str:
+    value = (raw_value or "").strip()
+    if not value:
+        return ""
+
+    if value.startswith("FIREBASE_CREDENTIALS_JSON="):
+        value = value.split("=", 1)[1].strip()
+
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"\"", "'"}:
+        value = value[1:-1].strip()
+
+    return value
+
+
 def _resolve_credentials_source() -> tuple[Optional[dict[str, Any]], Optional[Path]]:
     if FIREBASE_CREDENTIALS_JSON:
+        normalized_json = _normalize_credentials_json(FIREBASE_CREDENTIALS_JSON)
+        if not normalized_json:
+            logger.warning("Firebase initialization skipped: FIREBASE_CREDENTIALS_JSON is empty after normalization")
+            return None, None
         try:
-            payload = json.loads(FIREBASE_CREDENTIALS_JSON)
+            payload = json.loads(normalized_json)
         except json.JSONDecodeError:
             logger.exception("Firebase initialization skipped: FIREBASE_CREDENTIALS_JSON is not valid JSON")
             return None, None
