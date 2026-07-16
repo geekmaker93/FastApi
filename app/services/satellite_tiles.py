@@ -2,11 +2,25 @@
 Satellite imagery tile service for live feeds
 Supports multiple providers: Google Earth Engine, external tile services
 """
+import logging
+import os
 import ee
 import google.auth
+from google.oauth2 import service_account
+from pathlib import Path
 from typing import Dict, Optional, Tuple
 from datetime import datetime, timedelta
 from app.core.config import GEE_PROJECT_ID
+
+
+logger = logging.getLogger("crop_backend.earth_engine")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SYSTEM_TIME_START = "system:time_start"
+_DEFAULT_CREDENTIAL_FILES = (
+    PROJECT_ROOT / "serviceAccountKey.json",
+    PROJECT_ROOT / "google-service-account.json",
+    PROJECT_ROOT / "firebase-service-account.json",
+)
 
 
 class SatelliteTileService:
@@ -14,28 +28,97 @@ class SatelliteTileService:
     
     def __init__(self):
         self.ee_initialized = False
+        self._init_error: Optional[str] = None
         self._initialize_earth_engine()
+
+    def _resolve_credentials_file(self) -> Optional[Path]:
+        configured_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
+        if configured_path:
+            candidate = Path(configured_path).expanduser()
+            if not candidate.is_absolute():
+                candidate = PROJECT_ROOT / candidate
+            if candidate.is_file():
+                return candidate
+
+        for candidate in _DEFAULT_CREDENTIAL_FILES:
+            if candidate.is_file():
+                return candidate
+
+        return None
+
+    def _build_init_attempts(self, scopes: list[str]):
+        configured_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
+        credentials_file = self._resolve_credentials_file()
+
+        if configured_path and credentials_file is not None:
+            return [(
+                "service_account_file",
+                lambda: service_account.Credentials.from_service_account_file(
+                    str(credentials_file),
+                    scopes=scopes,
+                ),
+            )]
+
+        attempts = [(
+            "application_default_credentials",
+            lambda: google.auth.default(scopes=scopes)[0],
+        )]
+
+        if credentials_file is not None:
+            attempts.append((
+                "service_account_file",
+                lambda: service_account.Credentials.from_service_account_file(
+                    str(credentials_file),
+                    scopes=scopes,
+                ),
+            ))
+
+        return attempts
     
     def _initialize_earth_engine(self):
         """Initialize Google Earth Engine"""
+        if self.ee_initialized:
+            return
+
+        project_id = (GEE_PROJECT_ID or "").strip()
+        if not project_id:
+            self._init_error = "GEE_PROJECT_ID is not configured"
+            logger.warning("Earth Engine initialization skipped: %s", self._init_error)
+            return
+
+        scopes = [
+            "https://www.googleapis.com/auth/earthengine",
+            "https://www.googleapis.com/auth/cloud-platform",
+        ]
+
         try:
-            if GEE_PROJECT_ID:
-                scopes = [
-                    "https://www.googleapis.com/auth/earthengine",
-                    "https://www.googleapis.com/auth/cloud-platform",
-                ]
-                credentials, _ = google.auth.default(scopes=scopes)
-                if hasattr(credentials, "with_quota_project"):
-                    credentials = credentials.with_quota_project(GEE_PROJECT_ID)
-                ee.Initialize(credentials=credentials, project=GEE_PROJECT_ID)
+            init_attempts = self._build_init_attempts(scopes)
+
+            last_error: Optional[Exception] = None
+            for source_name, credentials_factory in init_attempts:
                 try:
-                    ee.data.setCloudApiUserProject(GEE_PROJECT_ID)
-                except Exception:
-                    pass
-                self.ee_initialized = True
+                    credentials = credentials_factory()
+                    if hasattr(credentials, "with_quota_project"):
+                        credentials = credentials.with_quota_project(project_id)
+                    ee.Initialize(credentials=credentials, project=project_id)
+                    try:
+                        ee.data.setCloudApiUserProject(project_id)
+                    except Exception:
+                        pass
+                    self.ee_initialized = True
+                    self._init_error = None
+                    logger.info("Earth Engine initialized using %s", source_name)
+                    return
+                except Exception as exc:
+                    last_error = exc
+                    logger.warning("Earth Engine initialization attempt failed using %s: %s", source_name, exc)
+
+            self._init_error = str(last_error) if last_error else "Unknown initialization error"
         except Exception as e:
-            print(f"Earth Engine initialization failed: {e}")
-            self.ee_initialized = False
+            self._init_error = str(e)
+
+        logger.error("Earth Engine initialization failed: %s", self._init_error)
+        self.ee_initialized = False
     
     def get_latest_sentinel2_tiles(
         self, 
@@ -59,8 +142,12 @@ class SatelliteTileService:
             Dict with tile URL and metadata
         """
         if not self.ee_initialized:
+            self._initialize_earth_engine()
+
+        if not self.ee_initialized:
             return {
                 "error": "Earth Engine not initialized",
+                "details": self._init_error,
                 "fallback": "Use external tile service"
             }
         
@@ -78,7 +165,6 @@ class SatelliteTileService:
             ]
 
             collection = None
-            used_attempt = None
             for attempt in search_attempts:
                 aoi = point.buffer(attempt["buffer_km"] * 1000)
                 start_date = end_date - timedelta(days=attempt["days"])
@@ -86,10 +172,9 @@ class SatelliteTileService:
                     .filterBounds(aoi) \
                     .filterDate(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')) \
                     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', attempt["cloud"])) \
-                    .sort('system:time_start', False)
+                    .sort(SYSTEM_TIME_START, False)
                 if coll.size().getInfo() > 0:
                     collection = coll
-                    used_attempt = attempt
                     break
 
             if collection is None:
@@ -133,7 +218,13 @@ class SatelliteTileService:
     ) -> Dict:
         """Get NDVI layer tiles from latest Sentinel-2"""
         if not self.ee_initialized:
-            return {"error": "Earth Engine not initialized"}
+            self._initialize_earth_engine()
+
+        if not self.ee_initialized:
+            return {
+                "error": "Earth Engine not initialized",
+                "details": self._init_error,
+            }
         
         try:
             point = ee.Geometry.Point([lon, lat])
@@ -156,7 +247,7 @@ class SatelliteTileService:
                     .filterBounds(aoi) \
                     .filterDate(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')) \
                     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', attempt["cloud"])) \
-                    .sort('system:time_start', False)
+                    .sort(SYSTEM_TIME_START, False)
                 if coll.size().getInfo() > 0:
                     collection = coll
                     used_attempt = attempt
