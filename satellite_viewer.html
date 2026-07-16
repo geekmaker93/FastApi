@@ -166,13 +166,38 @@
     <script>
         // API Configuration
         const DEFAULT_RENDER_API = 'https://crop-backend.onrender.com';
-        const API_BASE = (() => {
+        const LOCAL_API_BASES = ['http://127.0.0.1:18000', 'http://localhost:18000'];
+        const API_BASES = (() => {
             const origin = globalThis.location?.origin;
             if (origin && origin !== 'null' && !origin.startsWith('file:')) {
-                return origin.replace(/\/$/, '');
+                return [origin.replace(/\/$/, '')];
             }
-            return DEFAULT_RENDER_API;
+            return [...LOCAL_API_BASES, DEFAULT_RENDER_API];
         })();
+
+        async function fetchFromApi(path) {
+            let lastError = new Error('No API base configured');
+
+            for (const base of API_BASES) {
+                const url = `${base}${path}`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        const message = data.detail || data.error || `HTTP ${response.status}`;
+                        lastError = new Error(`${base}: ${message}`);
+                        continue;
+                    }
+
+                    return { base, data };
+                } catch (error) {
+                    lastError = new Error(`${base}: ${error.message}`);
+                }
+            }
+
+            throw lastError;
+        }
         
         // Initialize map
         const map = L.map('map').setView([18.0180, -76.8099], 13);
@@ -245,8 +270,7 @@
                 
                 // Handle free external tile sources
                 if (layerType === 'esri') {
-                    const response = await fetch(`${API_BASE}/sentinel/external/esri-world`);
-                    data = await response.json();
+                    ({ data } = await fetchFromApi('/sentinel/external/esri-world'));
                     
                     satelliteLayer = L.tileLayer(data.tile_url, {
                         attribution: data.attribution,
@@ -261,8 +285,7 @@
                 }
                 
                 if (layerType === 'nasa') {
-                    const response = await fetch(`${API_BASE}/sentinel/external/nasa-gibs`);
-                    data = await response.json();
+                    ({ data } = await fetchFromApi('/sentinel/external/nasa-gibs'));
                     
                     satelliteLayer = L.tileLayer(data.tile_url, {
                         attribution: data.attribution,
@@ -285,14 +308,7 @@
                     document.getElementById('legend').classList.remove('active');
                 }
                 
-                const response = await fetch(`${API_BASE}${endpoint}`);
-                data = await response.json();
-                
-                if (data.error) {
-                    showStatus(`Error: ${data.error}`, 'error');
-                    loadBtn.disabled = false;
-                    return;
-                }
+                ({ data } = await fetchFromApi(endpoint));
                 
                 // Add satellite tile layer
                 satelliteLayer = L.tileLayer(data.tile_url, {
@@ -331,8 +347,7 @@
         // Load external tile sources on page load
         async function loadTileSources() {
             try {
-                const response = await fetch(`${API_BASE}/sentinel/tile-sources`);
-                const sources = await response.json();
+                const { data: sources } = await fetchFromApi('/sentinel/tile-sources');
                 console.log('Available tile sources:', sources);
             } catch (error) {
                 console.error('Failed to load tile sources:', error);
