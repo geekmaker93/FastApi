@@ -4,6 +4,7 @@ Supports multiple providers: Google Earth Engine, external tile services
 """
 import logging
 import os
+import json
 import ee
 import google.auth
 from google.oauth2 import service_account
@@ -49,6 +50,20 @@ class SatelliteTileService:
     def _build_init_attempts(self, scopes: list[str]):
         configured_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
         credentials_file = self._resolve_credentials_file()
+        credentials_json = os.getenv("GEE_SERVICE_ACCOUNT_JSON", "").strip()
+
+        if credentials_json:
+            try:
+                credentials_info = json.loads(credentials_json)
+            except json.JSONDecodeError as exc:
+                raise ValueError("GEE_SERVICE_ACCOUNT_JSON must contain valid JSON") from exc
+            return [(
+                "service_account_json",
+                lambda: service_account.Credentials.from_service_account_info(
+                    credentials_info,
+                    scopes=scopes,
+                ),
+            )]
 
         if configured_path and credentials_file is not None:
             return [(
@@ -80,9 +95,25 @@ class SatelliteTileService:
         if self.ee_initialized:
             return
 
-        project_id = (GEE_PROJECT_ID or "").strip()
+        project_id = (
+            GEE_PROJECT_ID
+            or os.getenv("GOOGLE_CLOUD_PROJECT")
+            or os.getenv("GCLOUD_PROJECT")
+            or ""
+        ).strip()
+
         if not project_id:
-            self._init_error = "GEE_PROJECT_ID is not configured"
+            credentials_json = os.getenv("GEE_SERVICE_ACCOUNT_JSON", "").strip()
+            if credentials_json:
+                try:
+                    project_id = str(json.loads(credentials_json).get("project_id") or "").strip()
+                except json.JSONDecodeError:
+                    self._init_error = "GEE_SERVICE_ACCOUNT_JSON must contain valid JSON"
+                    logger.error("Earth Engine initialization failed: %s", self._init_error)
+                    return
+
+        if not project_id:
+            self._init_error = "No Google Cloud project is configured"
             logger.warning("Earth Engine initialization skipped: %s", self._init_error)
             return
 
