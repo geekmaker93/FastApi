@@ -79,7 +79,13 @@ def get_live_satellite_tiles(
     )
     
     if "error" in result:
-        raise HTTPException(status_code=503, detail=result["error"])
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": result["error"],
+                "diagnostic": result.get("details"),
+            },
+        )
     
     return result
 
@@ -103,7 +109,13 @@ def get_live_ndvi_tiles(
     )
     
     if "error" in result:
-        raise HTTPException(status_code=503, detail=result["error"])
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": result["error"],
+                "diagnostic": result.get("details"),
+            },
+        )
     
     return result
 
