@@ -56,11 +56,21 @@ def get_ndvi_for_point(
             "ndvi_min": round(float(stats.get("min") or mean_ndvi), 4),
             "ndvi_max": round(float(stats.get("max") or mean_ndvi), 4),
             "health_status": health,
+            "source": "earth-engine",
         }
         _NDVI_POINT_CACHE[cache_key] = {**response, "_cached_at": time.time()}
         return response
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"NDVI point lookup failed: {str(e)}")
+        return {
+            "lat": lat,
+            "lon": lon,
+            "ndvi_mean": 0.5,
+            "ndvi_min": 0.5,
+            "ndvi_max": 0.5,
+            "health_status": "Estimated",
+            "source": "fallback",
+            "provider_error": str(e),
+        }
 
 class NDVISnapshotCreate(BaseModel):
     farm_id: int

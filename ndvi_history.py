@@ -1,4 +1,5 @@
 import logging
+import json
 import os
 from pathlib import Path
 
@@ -38,8 +39,28 @@ def _resolve_credentials_file():
 
 
 def _build_init_attempts(scopes):
+    configured_service_account = os.getenv("GEE_SERVICE_ACCOUNT_JSON", "").strip()
     configured_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
     credentials_file = _resolve_credentials_file()
+
+    if configured_service_account:
+        try:
+            service_account_info = json.loads(configured_service_account)
+        except json.JSONDecodeError as exc:
+            error_message = f"GEE_SERVICE_ACCOUNT_JSON is not valid JSON: {exc}"
+
+            def invalid_service_account_json():
+                raise ValueError(error_message)
+
+            return [("service_account_json", invalid_service_account_json)]
+
+        return [(
+            "service_account_json",
+            lambda: service_account.Credentials.from_service_account_info(
+                service_account_info,
+                scopes=scopes,
+            ),
+        )]
 
     if configured_path and credentials_file is not None:
         return [(

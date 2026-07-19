@@ -33,6 +33,8 @@ services:
         sync: false
       - key: GEE_PROJECT_ID
         sync: false
+      - key: GEE_SERVICE_ACCOUNT_JSON
+        sync: false
       - key: PERENUAL_API_KEY
         sync: false
       - key: TREFLE_API_KEY
