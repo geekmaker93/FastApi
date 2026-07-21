@@ -128,10 +128,17 @@ def serialize_live_state(state: FarmLiveState | None) -> Optional[Dict[str, Any]
     return _serialize_live_state(state)
 
 
-def _persist_ndvi_snapshot(db: Session, farm: Farm, vegetation_data: Dict[str, Any], refreshed_at: datetime) -> None:
+def _persist_ndvi_snapshot(
+    db: Session,
+    farm: Farm,
+    vegetation_data: Dict[str, Any],
+    refreshed_at: datetime,
+    *,
+    force: bool = False,
+) -> Optional[NDVISnapshot]:
     ndvi_value = _safe_float(vegetation_data.get("ndvi"), None)
     if ndvi_value is None:
-        return
+        return None
 
     latest = (
         db.query(NDVISnapshot)
@@ -141,8 +148,8 @@ def _persist_ndvi_snapshot(db: Session, farm: Farm, vegetation_data: Dict[str, A
     )
     latest_ndvi = _safe_float(getattr(latest, "ndvi_avg", None), None)
     same_day = bool(latest and latest.captured_at and latest.captured_at.date() == refreshed_at.date())
-    if same_day and latest_ndvi is not None and abs(latest_ndvi - ndvi_value) < FARM_LIVE_NDVI_DELTA:
-        return
+    if not force and same_day and latest_ndvi is not None and abs(latest_ndvi - ndvi_value) < FARM_LIVE_NDVI_DELTA:
+        return None
 
     snapshot = NDVISnapshot(
         farm_id=farm.id,
@@ -160,9 +167,16 @@ def _persist_ndvi_snapshot(db: Session, farm: Farm, vegetation_data: Dict[str, A
         created_at=refreshed_at,
     )
     db.add(snapshot)
+    return snapshot
 
 
-def refresh_farm_live_state(db: Session, farm: Farm, *, force_refresh_soil: bool = False) -> FarmLiveState:
+def refresh_farm_live_state(
+    db: Session,
+    farm: Farm,
+    *,
+    force_refresh_soil: bool = False,
+    force_snapshot: bool = False,
+) -> FarmLiveState:
     coordinates = extract_farm_coordinates(farm.polygon)
     latitude = _safe_float(coordinates.get("latitude"), None)
     longitude = _safe_float(coordinates.get("longitude"), None)
@@ -261,7 +275,20 @@ def refresh_farm_live_state(db: Session, farm: Farm, *, force_refresh_soil: bool
         state.changed_at = refreshed_at
         state.data_hash = payload_hash
 
-    _persist_ndvi_snapshot(db, farm, vegetation_data, refreshed_at)
+    snapshot = _persist_ndvi_snapshot(
+        db,
+        farm,
+        vegetation_data,
+        refreshed_at,
+        force=force_snapshot,
+    )
+    if snapshot is not None:
+        db.flush()
+    state.source_data["snapshot"] = {
+        "created": snapshot is not None,
+        "id": snapshot.id if snapshot is not None else None,
+        "reason": "forced" if force_snapshot else "unchanged_today",
+    }
     db.add(state)
     db.commit()
     db.refresh(state)

@@ -221,7 +221,12 @@ def force_refresh_farm_live_data(
     db: Annotated[Session, Depends(get_db)],
 ):
     farm = _get_owned_farm_or_404(db, farm_id, current_user.id)
-    live_state = refresh_farm_live_state(db, farm, force_refresh_soil=True)
+    live_state = refresh_farm_live_state(
+        db,
+        farm,
+        force_refresh_soil=True,
+        force_snapshot=True,
+    )
     return serialize_live_state(live_state)
 
 
