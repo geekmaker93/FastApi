@@ -63,7 +63,7 @@ def get_live_satellite_tiles(
     cloud_cover_max: int = Query(20, description="Maximum cloud cover percentage")
 ):
     """
-    Get live satellite imagery tiles (Sentinel-2 via Google Earth Engine)
+    Get live satellite imagery tiles (Sentinel-2 via Copernicus Sentinel Hub)
     Returns tile URL and TileJSON for map integration
     
     Usage in frontend:

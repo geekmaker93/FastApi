@@ -1,168 +1,78 @@
-import logging
-import json
+"""Copernicus Data Space NDVI statistics helpers."""
 import os
-from pathlib import Path
+from datetime import date
+from typing import Any, Dict
 
-import ee
-import google.auth
-from google.oauth2 import service_account
-
-from app.core.config import GEE_PROJECT_ID
+import requests
 
 
-logger = logging.getLogger("crop_backend.earth_engine")
-PROJECT_ROOT = Path(__file__).resolve().parent
-_DEFAULT_CREDENTIAL_FILES = (
-    PROJECT_ROOT / "serviceAccountKey.json",
-    PROJECT_ROOT / "google-service-account.json",
-    PROJECT_ROOT / "firebase-service-account.json",
-)
-
-_EE_INITIALIZED = False
-_EE_INIT_ERROR = None
+_TOKEN_URL = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
+_STATISTICS_URL = "https://sh.dataspace.copernicus.eu/api/v1/statistics"
+_NDVI_EVALSCRIPT = """//VERSION=3
+function setup() { return {input: [\"B04\", \"B08\", \"dataMask\"], output: [{id: \"ndvi\", bands: 1}, {id: \"dataMask\", bands: 1}]}; }
+function evaluatePixel(sample) { return {ndvi: [(sample.B08 - sample.B04) / (sample.B08 + sample.B04)], dataMask: [sample.dataMask]}; }"""
 
 
-def _resolve_credentials_file():
-    configured_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
-    if configured_path:
-        candidate = Path(configured_path).expanduser()
-        if not candidate.is_absolute():
-            candidate = PROJECT_ROOT / candidate
-        if candidate.is_file():
-            return candidate
+def _access_token() -> str:
+    client_id = os.getenv("COPERNICUS_CLIENT_ID", "").strip()
+    client_secret = os.getenv("COPERNICUS_CLIENT_SECRET", "").strip()
+    if not client_id or not client_secret:
+        raise RuntimeError("COPERNICUS_CLIENT_ID and COPERNICUS_CLIENT_SECRET must be configured")
 
-    for candidate in _DEFAULT_CREDENTIAL_FILES:
-        if candidate.is_file():
-            return candidate
+    response = requests.post(
+        _TOKEN_URL,
+        data={"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret},
+        timeout=20,
+    )
+    response.raise_for_status()
+    token = response.json().get("access_token")
+    if not token:
+        raise RuntimeError("Copernicus token response did not contain an access token")
+    return token
 
-    return None
-
-
-def _build_init_attempts(scopes):
-    configured_service_account = os.getenv("GEE_SERVICE_ACCOUNT_JSON", "").strip()
-    configured_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
-    credentials_file = _resolve_credentials_file()
-
-    if configured_service_account:
-        try:
-            service_account_info = json.loads(configured_service_account)
-        except json.JSONDecodeError as exc:
-            error_message = f"GEE_SERVICE_ACCOUNT_JSON is not valid JSON: {exc}"
-
-            def invalid_service_account_json():
-                raise ValueError(error_message)
-
-            return [("service_account_json", invalid_service_account_json)]
-
-        return [(
-            "service_account_json",
-            lambda: service_account.Credentials.from_service_account_info(
-                service_account_info,
-                scopes=scopes,
-            ),
-        )]
-
-    if configured_path and credentials_file is not None:
-        return [(
-            "service_account_file",
-            lambda: service_account.Credentials.from_service_account_file(
-                str(credentials_file),
-                scopes=scopes,
-            ),
-        )]
-
-    attempts = [(
-        "application_default_credentials",
-        lambda: google.auth.default(scopes=scopes)[0],
-    )]
-
-    if credentials_file is not None:
-        attempts.append((
-            "service_account_file",
-            lambda: service_account.Credentials.from_service_account_file(
-                str(credentials_file),
-                scopes=scopes,
-            ),
-        ))
-
-    return attempts
-
-
-def _initialize_earth_engine() -> bool:
-    global _EE_INITIALIZED
-    global _EE_INIT_ERROR
-
-    if _EE_INITIALIZED:
-        return True
-
-    project_id = (GEE_PROJECT_ID or "").strip()
-    if not project_id:
-        _EE_INIT_ERROR = "GEE_PROJECT_ID is not configured"
-        return False
-
-    scopes = [
-        "https://www.googleapis.com/auth/earthengine",
-        "https://www.googleapis.com/auth/cloud-platform",
-    ]
-
-    last_error = None
-    for source_name, credentials_factory in _build_init_attempts(scopes):
-        try:
-            credentials = credentials_factory()
-            if hasattr(credentials, "with_quota_project"):
-                credentials = credentials.with_quota_project(project_id)
-            ee.Initialize(credentials=credentials, project=project_id)
-            try:
-                ee.data.setCloudApiUserProject(project_id)
-            except Exception:
-                pass
-            _EE_INITIALIZED = True
-            _EE_INIT_ERROR = None
-            logger.info("Earth Engine initialized for NDVI history using %s", source_name)
-            return True
-        except Exception as exc:
-            last_error = exc
-            logger.warning("Earth Engine initialization attempt failed in ndvi_history using %s: %s", source_name, exc)
-
-    _EE_INIT_ERROR = str(last_error) if last_error else "Unknown initialization error"
-    logger.error("Earth Engine initialization warning: %s", _EE_INIT_ERROR)
-    return False
 
 def get_historical_ndvi(lat, lon, start_year=2020, end_year=2024):
-    if not _initialize_earth_engine():
-        raise RuntimeError(f"Earth Engine not initialized: {_EE_INIT_ERROR}")
-
-    point = ee.Geometry.Point(lon, lat)
-
-    collection = (
-        ee.ImageCollection("COPERNICUS/S2_SR")
-        .filterBounds(point)
-        .filterDate(f"{start_year}-01-01", f"{end_year}-12-31")
-        .map(lambda img: img.normalizedDifference(["B8", "B4"]).rename("ndvi"))
-    )
-
-    stats = collection.reduce(
-        ee.Reducer.min()
-        .combine(ee.Reducer.max(), "", True)
-        .combine(ee.Reducer.mean(), "", True)
-    )
-
-    values = stats.reduceRegion(
-        reducer=ee.Reducer.first(),
-        geometry=point,
-        scale=10
-    )
-
-    return {
-        "min": values.get("ndvi_min").getInfo(),
-        "max": values.get("ndvi_max").getInfo(),
-        "mean": values.get("ndvi_mean").getInfo()
+    """Return aggregate Sentinel-2 L2A NDVI statistics for a point."""
+    start_date = date(int(start_year), 1, 1)
+    end_date = date(int(end_year), 12, 31)
+    payload: Dict[str, Any] = {
+        "input": {
+            "bounds": {"geometry": {"type": "Point", "coordinates": [float(lon), float(lat)]}},
+            "data": [{"type": "sentinel-2-l2a", "dataFilter": {"maxCloudCoverage": 30}}],
+        },
+        "aggregation": {
+            "timeRange": {"from": f"{start_date.isoformat()}T00:00:00Z", "to": f"{end_date.isoformat()}T23:59:59Z"},
+            "aggregationInterval": {"of": "P1D"},
+            "resx": 10,
+            "resy": 10,
+        },
+        "evalscript": _NDVI_EVALSCRIPT,
     }
+    response = requests.post(
+        _STATISTICS_URL,
+        headers={"Authorization": f"Bearer {_access_token()}"},
+        json=payload,
+        timeout=45,
+    )
+    response.raise_for_status()
+    intervals = response.json().get("data", [])
+    statistics = [
+        entry["outputs"]["ndvi"]["bands"]["B0"]["stats"]
+        for entry in intervals
+        if entry.get("outputs", {}).get("ndvi", {}).get("bands", {}).get("B0", {}).get("stats", {}).get("sampleCount", 0)
+    ]
+    if not statistics:
+        raise RuntimeError("No cloud-free Sentinel-2 NDVI observations found for this location and period")
+
+    sample_count = sum(item["sampleCount"] for item in statistics)
+    return {
+        "min": min(item["min"] for item in statistics),
+        "max": max(item["max"] for item in statistics),
+        "mean": sum(item["mean"] * item["sampleCount"] for item in statistics) / sample_count,
+    }
+
 
 def normalize_ndvi(current_ndvi, hist_min, hist_max):
     if hist_max == hist_min:
         return 0.5
-    return round(
-        (current_ndvi - hist_min) / (hist_max - hist_min),
-        2
-    )
+    return round((current_ndvi - hist_min) / (hist_max - hist_min), 2)

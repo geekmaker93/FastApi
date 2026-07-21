@@ -56,7 +56,7 @@ def get_ndvi_for_point(
             "ndvi_min": round(float(stats.get("min") or mean_ndvi), 4),
             "ndvi_max": round(float(stats.get("max") or mean_ndvi), 4),
             "health_status": health,
-            "source": "earth-engine",
+            "source": "copernicus-data-space",
         }
         _NDVI_POINT_CACHE[cache_key] = {**response, "_cached_at": time.time()}
         return response
