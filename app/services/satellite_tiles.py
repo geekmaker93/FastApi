@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 class SatelliteTileService:
     """Generate Sentinel Hub WMTS URLs consumable by Leaflet and Mapbox."""
 
-    _WMTS_URL = "https://services.sentinel-hub.com/ogc/wmts/{instance_id}"
+    _WMTS_URL = "https://sh.dataspace.copernicus.eu/ogc/wmts/{instance_id}"
 
     def __init__(self):
         self.instance_id = os.getenv("SENTINELHUB_INSTANCE_ID", "").strip()
@@ -54,7 +54,7 @@ class SatelliteTileService:
     ) -> Dict:
         try:
             _ = buffer_km
-            tile_url = self._tile_url("TRUE-COLOR", days_back, cloud_cover_max)
+            tile_url = self._tile_url("TRUE_COLOR", days_back, cloud_cover_max)
             end_date = datetime.now(timezone.utc).date().isoformat()
             return {
                 "tile_url": tile_url,
@@ -76,7 +76,7 @@ class SatelliteTileService:
     ) -> Dict:
         try:
             _ = buffer_km
-            tile_url = self._tile_url("NDVI", days_back, 30)
+            tile_url = self._tile_url("VEGETATION_INDEX", days_back, 30)
             end_date = datetime.now(timezone.utc).date().isoformat()
             return {
                 "tile_url": tile_url,
