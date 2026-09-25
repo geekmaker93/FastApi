@@ -18,6 +18,10 @@ class User(Base):
     name = Column(String)
     email = Column(String, unique=True, index=True)
     password = Column(String)
+    subscription_plan = Column(String, nullable=False, default="FREE")
+    ai_requests_used = Column(Integer, nullable=False, default=0)
+    ai_requests_limit = Column(Integer, nullable=False, default=25)
+    ai_usage_reset_at = Column(DateTime, nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_online = Column(Boolean, default=False, nullable=False)
     last_seen = Column(DateTime, nullable=True)
@@ -28,6 +32,21 @@ class User(Base):
     farms = relationship("Farm", back_populates="owner")
     preferences = relationship("UserPreferences", back_populates="user", uselist=False)
     device_tokens = relationship("UserDeviceToken", back_populates="user", cascade="all, delete-orphan")
+
+
+class AnalyticsEvent(Base):
+    __tablename__ = "analytics_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey(USER_ID_FK), nullable=True, index=True)
+    session_id = Column(String, nullable=True, index=True)
+    event_name = Column(String, nullable=False, index=True)
+    event_data = Column(JSON, nullable=True)
+    platform = Column(String, nullable=True)
+    app_version = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    user = relationship("User")
 
 
 class UserDeviceToken(Base):
@@ -179,6 +198,14 @@ def ensure_user_schema(engine) -> None:
         statements.append("ALTER TABLE users ADD COLUMN is_online BOOLEAN DEFAULT FALSE")
     if "last_seen" not in existing_users:
         statements.append("ALTER TABLE users ADD COLUMN last_seen TIMESTAMP")
+    if "subscription_plan" not in existing_users:
+        statements.append("ALTER TABLE users ADD COLUMN subscription_plan VARCHAR DEFAULT 'FREE'")
+    if "ai_requests_used" not in existing_users:
+        statements.append("ALTER TABLE users ADD COLUMN ai_requests_used INTEGER DEFAULT 0")
+    if "ai_requests_limit" not in existing_users:
+        statements.append("ALTER TABLE users ADD COLUMN ai_requests_limit INTEGER DEFAULT 25")
+    if "ai_usage_reset_at" not in existing_users:
+        statements.append("ALTER TABLE users ADD COLUMN ai_usage_reset_at TIMESTAMP")
 
     if not statements:
         return

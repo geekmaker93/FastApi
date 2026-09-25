@@ -269,3 +269,12 @@ def get_dashboard_html():
     from fastapi.responses import FileResponse
     dashboard_path = Path(__file__).parent / "dashboard.html"
     return FileResponse(dashboard_path, media_type="text/html")
+
+
+@app.get("/satellite-viewer")
+@app.get("/satellite-viewer.html")
+def get_satellite_viewer():
+    """Serve the live satellite map from the same origin as its API."""
+    from fastapi.responses import FileResponse
+    viewer_path = Path(__file__).parent / "satellite_viewer.html"
+    return FileResponse(viewer_path, media_type="text/html")

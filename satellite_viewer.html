@@ -165,14 +165,14 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // API Configuration
-        const DEFAULT_RENDER_API = 'https://crop-backend.onrender.com';
         const LOCAL_API_BASES = ['http://127.0.0.1:18000', 'http://localhost:18000'];
         const API_BASES = (() => {
             const origin = globalThis.location?.origin;
             if (origin && origin !== 'null' && !origin.startsWith('file:')) {
                 return [origin.replace(/\/$/, '')];
             }
-            return [...LOCAL_API_BASES, DEFAULT_RENDER_API];
+            const apiBase = new URLSearchParams(globalThis.location?.search).get('apiBase');
+            return apiBase ? [apiBase.replace(/\/$/, '')] : LOCAL_API_BASES;
         })();
 
         async function fetchFromApi(path) {

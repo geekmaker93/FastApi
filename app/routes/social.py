@@ -101,6 +101,7 @@ from app.models.social_models import (
     SocialPost,
     SocialProfile,
 )
+from app.services.ai_usage import profile_badge_snapshot
 from app.services.firebase import send_message_notification, send_social_activity_notification
 from app.services.social_realtime import social_connection_manager
 
@@ -260,6 +261,7 @@ class ProfileOut(BaseModel):
     experience_level: Optional[str] = None
     planting_months: Optional[str] = None
     goals: Optional[str] = None
+    profile_badge: Optional[dict] = None
     post_count: int = 0
     message_count: int = 0
 
@@ -283,6 +285,7 @@ def _build_profile_out_for_user(db: Session, target_user_id: str) -> dict:
         "experience_level": profile.experience_level if profile else None,
         "planting_months": profile.planting_months if profile else None,
         "goals": profile.goals if profile else None,
+        "profile_badge": profile_badge_snapshot(user),
         "post_count": db.query(SocialPost).filter(SocialPost.user_id == target_user_id).count(),
         "message_count": db.query(SocialMessage).filter(SocialMessage.sender_id == target_user_id).count(),
     }
@@ -1977,6 +1980,7 @@ def get_my_profile(
 ):
     me = current_user.email
     profile = db.query(SocialProfile).filter(SocialProfile.user_id == me).first()
+    badge = profile_badge_snapshot(current_user)
     return {
         "user_id": me,
         "display_name": profile.display_name if profile else _display(current_user),
@@ -1990,6 +1994,7 @@ def get_my_profile(
         "experience_level": profile.experience_level if profile else None,
         "planting_months": profile.planting_months if profile else None,
         "goals": profile.goals if profile else None,
+        "profile_badge": badge,
         "post_count": db.query(SocialPost).filter(SocialPost.user_id == me).count(),
         "message_count": db.query(SocialMessage).filter(SocialMessage.sender_id == me).count(),
     }
@@ -2006,6 +2011,7 @@ def update_my_profile(
     if not profile:
         profile = SocialProfile(user_id=me)
         db.add(profile)
+    badge = profile_badge_snapshot(current_user)
 
     if body.display_name is not None:
         profile.display_name = body.display_name
@@ -2045,6 +2051,7 @@ def update_my_profile(
         "experience_level": profile.experience_level,
         "planting_months": profile.planting_months,
         "goals": profile.goals,
+        "profile_badge": badge,
         "post_count": db.query(SocialPost).filter(SocialPost.user_id == me).count(),
         "message_count": db.query(SocialMessage).filter(SocialMessage.sender_id == me).count(),
     }
@@ -2082,6 +2089,7 @@ class UserSearchResult(BaseModel):
     user_id: str
     display_name: str
     avatar_url: Optional[str] = None
+    profile_badge: Optional[dict] = None
 
 
 @router.get("/users/search", response_model=List[UserSearchResult])
@@ -2124,6 +2132,7 @@ def search_users(
     # Build results
     results = []
     for email in list(email_set)[:100]:
+        user = db.query(User).filter(User.email == email).first()
         profile = db.query(SocialProfile).filter(SocialProfile.user_id == email).first()
         display_name = profile.display_name if (profile and profile.display_name) else email.split("@")[0]
         results.append(
@@ -2131,6 +2140,7 @@ def search_users(
                 user_id=email,
                 display_name=display_name,
                 avatar_url=profile.avatar_url if profile else None,
+                profile_badge=profile_badge_snapshot(user) if user else None,
             )
         )
 

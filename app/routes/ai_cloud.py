@@ -23,6 +23,7 @@ from app.services.product_mapper import map_products
 from app.services.region_mapper import get_region
 from app.services.region_profiles import REGION_PROFILES
 from app.services.rag_store import query_index
+from app.services.ai_usage import can_consume_request, consume_request, ensure_usage_window, usage_snapshot
 from app.services.product_locator import (
     find_nearby_stores,
     format_products_for_ai,
@@ -2956,14 +2957,35 @@ def cloud_ai_chat(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> Dict[str, Any]:
+    if ensure_usage_window(current_user):
+        db.commit()
+        db.refresh(current_user)
+
+    if not can_consume_request(current_user):
+        usage = usage_snapshot(current_user)
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "AI_LIMIT_REACHED",
+                "message": "You've reached your monthly AI limit. Upgrade to FarmSense Pro for unlimited AI assistance, advanced crop insights, and priority responses.",
+                "usage": usage,
+            },
+        )
+
+    usage = consume_request(current_user)
+    db.commit()
+    db.refresh(current_user)
+
     try:
-        return _cloud_ai_chat_impl(body=body, current_user=current_user, db=db)
+        payload = _cloud_ai_chat_impl(body=body, current_user=current_user, db=db)
+        payload["usage"] = usage
+        return payload
     except HTTPException:
         raise
     except Exception as exc:
         # Absolute fallback to avoid runtime crashes from unexpected payload/edge-case paths.
         answer = _build_local_crop_response(realtime_context={})
-        return _build_response_payload(
+        payload = _build_response_payload(
             answer=answer,
             provider="local-failsafe",
             model="runtime-guard",
@@ -2978,3 +3000,16 @@ def cloud_ai_chat(
             },
             warning=f"AI runtime fallback activated: {str(exc)[:180]}",
         )
+        payload["usage"] = usage
+        return payload
+
+
+@router.get("/usage")
+def ai_usage_status(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Dict[str, Any]:
+    if ensure_usage_window(current_user):
+        db.commit()
+        db.refresh(current_user)
+    return usage_snapshot(current_user)

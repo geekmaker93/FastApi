@@ -189,6 +189,9 @@ Create `.env` file with:
 - `JWT_SECRET_KEY` - Secret used to sign JWT access tokens
 - `JWT_ALGORITHM` - JWT signing algorithm (default `HS256`)
 - `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` - Access token lifetime in minutes
+- `GOOGLE_PLAY_PACKAGE_NAME` - Android package name used for purchase verification
+- `GOOGLE_PLAY_PRO_PRODUCT_IDS` - The single $14.99 Premium Google Play product ID. A verified purchase of this product sets the user's shared `PRO` entitlement and unlocks all premium features.
+- One of `GOOGLE_PLAY_CREDENTIALS_B64`, `GOOGLE_PLAY_CREDENTIALS_JSON`, or `GOOGLE_PLAY_CREDENTIALS_PATH` - Google service-account credentials authorized for the Android Publisher API
 
 PostgreSQL example:
 - `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/crop_app`

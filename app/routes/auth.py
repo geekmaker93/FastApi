@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.security import create_access_token, decode_access_token, hash_password, verify_password
 from app.dependencies import get_current_user, get_db
 from app.models.db_models import User, UserPreferences
+from app.services.ai_usage import DEFAULT_FREE_LIMIT, ensure_usage_window, profile_badge_snapshot, usage_snapshot
 from app.services.email_service import (
     send_delete_confirmation_email,
     send_password_reset_email,
@@ -65,6 +66,9 @@ def signup(body: SignupRequest, background_tasks: BackgroundTasks, db: Annotated
         name=(body.name or email.split("@")[0]).strip(),
         email=email,
         password=hash_password(body.password),
+        subscription_plan="FREE",
+        ai_requests_used=0,
+        ai_requests_limit=DEFAULT_FREE_LIMIT,
         is_verified=False,
         verification_code=code,
         code_expires_at=expires_at,
@@ -181,12 +185,24 @@ def get_me(
     preferences = (
         db.query(UserPreferences).filter(UserPreferences.user_id == current_user.id).first()
     )
+    if ensure_usage_window(current_user):
+        db.commit()
+        db.refresh(current_user)
+    usage = usage_snapshot(current_user)
+    badge = profile_badge_snapshot(current_user)
     return {
         "id": current_user.id,
         "email": current_user.email,
         "name": current_user.name,
         "is_verified": current_user.is_verified,
         "wants_updates": preferences.wants_updates if preferences else True,
+        "subscription_plan": usage["subscription_plan"],
+        "ai_requests_used": usage["ai_requests_used"],
+        "ai_requests_limit": usage["ai_requests_limit"],
+        "ai_requests_remaining": usage["ai_requests_remaining"],
+        "ai_usage_reset_at": usage["ai_usage_reset_at"],
+        "ai_unlimited": usage["is_unlimited"],
+        "profile_badge": badge,
     }
 
 
