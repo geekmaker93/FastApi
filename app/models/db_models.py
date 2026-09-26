@@ -22,6 +22,7 @@ class User(Base):
     ai_requests_used = Column(Integer, nullable=False, default=0)
     ai_requests_limit = Column(Integer, nullable=False, default=25)
     ai_usage_reset_at = Column(DateTime, nullable=True)
+    is_admin = Column(Boolean, nullable=False, default=False, server_default=text("FALSE"))
     is_verified = Column(Boolean, default=False, nullable=False)
     is_online = Column(Boolean, default=False, nullable=False)
     last_seen = Column(DateTime, nullable=True)
@@ -206,6 +207,8 @@ def ensure_user_schema(engine) -> None:
         statements.append("ALTER TABLE users ADD COLUMN ai_requests_limit INTEGER DEFAULT 25")
     if "ai_usage_reset_at" not in existing_users:
         statements.append("ALTER TABLE users ADD COLUMN ai_usage_reset_at TIMESTAMP")
+    if "is_admin" not in existing_users:
+        statements.append("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE")
 
     if not statements:
         return

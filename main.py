@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 load_dotenv()
 
 from app.routes import land, farm, satellite, soil_weather, vegetation, polygons, yields, ndvi, tiles, news, products, ai_cloud, data_sources, rag, auth, snapshots, users, analytics
+from app.routes import admin
 from app.routes import social as social_module
 from app.database import engine
 from app.models import db_models
@@ -164,6 +165,7 @@ app.include_router(data_sources.router)
 app.include_router(rag.router)
 app.include_router(auth.router)
 app.include_router(analytics.router)
+app.include_router(admin.router)
 app.include_router(snapshots.router)
 app.include_router(users.router)
 app.include_router(social_module.router)
